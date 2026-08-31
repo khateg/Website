@@ -1,70 +1,117 @@
 import { db } from './firebase'
-import {
-  collection,
-  doc,
-  getDocs,
-  getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-} from 'firebase/firestore'
+import { ref, get, set, update, remove, child } from 'firebase/database'
 
-const PRODUCTS_COLLECTION = 'products'
+const PRODUCTS_PATH = 'products'
 
 export const productService = {
   // Get all products
   async getAllProducts() {
-    const querySnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION))
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }))
+    try {
+      const productsRef = ref(db, PRODUCTS_PATH)
+      const snapshot = await get(productsRef)
+
+      if (!snapshot.exists()) {
+        return []
+      }
+
+      const productsData = snapshot.val()
+      return Object.keys(productsData).map(id => ({
+        id,
+        ...productsData[id]
+      }))
+    } catch (error) {
+      console.error('Error fetching products:', error)
+      throw error
+    }
   },
 
   // Get single product
   async getProduct(productId) {
-    const docRef = doc(db, PRODUCTS_COLLECTION, productId)
-    const docSnap = await getDoc(docRef)
-    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null
+    try {
+      const productRef = ref(db, `${PRODUCTS_PATH}/${productId}`)
+      const snapshot = await get(productRef)
+
+      if (!snapshot.exists()) {
+        return null
+      }
+
+      return {
+        id: productId,
+        ...snapshot.val()
+      }
+    } catch (error) {
+      console.error('Error fetching product:', error)
+      throw error
+    }
   },
 
   // Add new product
   async addProduct(productData) {
-    const docRef = await addDoc(collection(db, PRODUCTS_COLLECTION), {
-      ...productData,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-    return docRef.id
+    try {
+      const newId = Math.random().toString(36).substr(2, 9)
+      const productRef = ref(db, `${PRODUCTS_PATH}/${newId}`)
+
+      await set(productRef, {
+        ...productData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+
+      return newId
+    } catch (error) {
+      console.error('Error adding product:', error)
+      throw error
+    }
   },
 
   // Update product
   async updateProduct(productId, productData) {
-    const docRef = doc(db, PRODUCTS_COLLECTION, productId)
-    await updateDoc(docRef, {
-      ...productData,
-      updatedAt: new Date(),
-    })
+    try {
+      const productRef = ref(db, `${PRODUCTS_PATH}/${productId}`)
+
+      await update(productRef, {
+        ...productData,
+        updatedAt: new Date().toISOString(),
+      })
+    } catch (error) {
+      console.error('Error updating product:', error)
+      throw error
+    }
   },
 
   // Delete product
   async deleteProduct(productId) {
-    const docRef = doc(db, PRODUCTS_COLLECTION, productId)
-    await deleteDoc(docRef)
+    try {
+      const productRef = ref(db, `${PRODUCTS_PATH}/${productId}`)
+      await remove(productRef)
+    } catch (error) {
+      console.error('Error deleting product:', error)
+      throw error
+    }
   },
 
   // Get products by category
   async getProductsByCategory(category) {
-    const q = query(
-      collection(db, PRODUCTS_COLLECTION),
-      where('category', '==', category)
-    )
-    const querySnapshot = await getDocs(q)
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }))
+    try {
+      const products = await this.getAllProducts()
+      return products.filter(product => product.category === category)
+    } catch (error) {
+      console.error('Error fetching products by category:', error)
+      throw error
+    }
+  },
+
+  // Update product stock
+  async updateProductStock(productId, newStock) {
+    try {
+      const productRef = ref(db, `${PRODUCTS_PATH}/${productId}`)
+      await update(productRef, {
+        stock: newStock,
+        updatedAt: new Date().toISOString(),
+      })
+    } catch (error) {
+      console.error('Error updating stock:', error)
+      throw error
+    }
   },
 }

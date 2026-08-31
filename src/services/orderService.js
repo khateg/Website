@@ -1,76 +1,124 @@
 import { db } from './firebase'
-import {
-  collection,
-  doc,
-  getDocs,
-  getDoc,
-  addDoc,
-  updateDoc,
-  query,
-  where,
-  orderBy,
-} from 'firebase/firestore'
+import { ref, get, set, update, push, child } from 'firebase/database'
 
-const ORDERS_COLLECTION = 'orders'
+const ORDERS_PATH = 'orders'
 
 export const orderService = {
   // Get all orders (admin)
   async getAllOrders() {
-    const q = query(collection(db, ORDERS_COLLECTION), orderBy('createdAt', 'desc'))
-    const querySnapshot = await getDocs(q)
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }))
+    try {
+      const ordersRef = ref(db, ORDERS_PATH)
+      const snapshot = await get(ordersRef)
+
+      if (!snapshot.exists()) {
+        return []
+      }
+
+      const ordersData = snapshot.val()
+      return Object.keys(ordersData)
+        .map(id => ({
+          id,
+          ...ordersData[id]
+        }))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    } catch (error) {
+      console.error('Error fetching all orders:', error)
+      throw error
+    }
   },
 
   // Get user's orders
   async getUserOrders(userId) {
-    const q = query(
-      collection(db, ORDERS_COLLECTION),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
-    )
-    const querySnapshot = await getDocs(q)
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }))
+    try {
+      const ordersRef = ref(db, ORDERS_PATH)
+      const snapshot = await get(ordersRef)
+
+      if (!snapshot.exists()) {
+        return []
+      }
+
+      const ordersData = snapshot.val()
+      return Object.keys(ordersData)
+        .filter(id => ordersData[id].userId === userId)
+        .map(id => ({
+          id,
+          ...ordersData[id]
+        }))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    } catch (error) {
+      console.error('Error fetching user orders:', error)
+      throw error
+    }
   },
 
   // Get single order
   async getOrder(orderId) {
-    const docRef = doc(db, ORDERS_COLLECTION, orderId)
-    const docSnap = await getDoc(docRef)
-    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null
+    try {
+      const orderRef = ref(db, `${ORDERS_PATH}/${orderId}`)
+      const snapshot = await get(orderRef)
+
+      if (!snapshot.exists()) {
+        return null
+      }
+
+      return {
+        id: orderId,
+        ...snapshot.val()
+      }
+    } catch (error) {
+      console.error('Error fetching order:', error)
+      throw error
+    }
   },
 
   // Create order
   async createOrder(orderData) {
-    const docRef = await addDoc(collection(db, ORDERS_COLLECTION), {
-      ...orderData,
-      status: 'pending', // pending, processing, shipped, delivered, cancelled
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-    return docRef.id
+    try {
+      const ordersRef = ref(db, ORDERS_PATH)
+      const newOrderRef = push(ordersRef)
+      const orderId = newOrderRef.key
+
+      await set(newOrderRef, {
+        ...orderData,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+
+      return orderId
+    } catch (error) {
+      console.error('Error creating order:', error)
+      throw error
+    }
   },
 
   // Update order status
   async updateOrderStatus(orderId, status) {
-    const docRef = doc(db, ORDERS_COLLECTION, orderId)
-    await updateDoc(docRef, {
-      status,
-      updatedAt: new Date(),
-    })
+    try {
+      const orderRef = ref(db, `${ORDERS_PATH}/${orderId}`)
+
+      await update(orderRef, {
+        status,
+        updatedAt: new Date().toISOString(),
+      })
+    } catch (error) {
+      console.error('Error updating order status:', error)
+      throw error
+    }
   },
 
   // Update order
   async updateOrder(orderId, orderData) {
-    const docRef = doc(db, ORDERS_COLLECTION, orderId)
-    await updateDoc(docRef, {
-      ...orderData,
-      updatedAt: new Date(),
-    })
+    try {
+      const orderRef = ref(db, `${ORDERS_PATH}/${orderId}`)
+
+      await update(orderRef, {
+        ...orderData,
+        updatedAt: new Date().toISOString(),
+      })
+    } catch (error) {
+      console.error('Error updating order:', error)
+      throw error
+    }
   },
 }
