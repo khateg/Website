@@ -10,11 +10,14 @@
 .navbar {
   background-color: var(--color-primary);
   color: white;
-  padding: 1rem 0;
+  padding: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 100;
+  height: 80px;
+  display: flex;
+  align-items: center;
 }
 
 .nav-container {
@@ -24,6 +27,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 2rem;
+  width: 100%;
+  height: 100%;
 }
 
 .logo {
@@ -37,7 +42,7 @@
 }
 
 .logo-img {
-  height: 40px;
+  height: 60px;
   width: auto;
   object-fit: contain;
 }
@@ -57,10 +62,15 @@
   padding: 0;
 }
 
-.nav-links a {
+.nav-links a,
+.nav-links button {
   color: white;
   text-decoration: none;
   transition: color 0.3s;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
 }
 
 .nav-links a:hover {
@@ -71,16 +81,40 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  position: relative;
+}
+
+.cart-icon-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--color-accent);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
 }
 
 .logout-btn {
   background-color: var(--color-support);
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
+  font-size: 0.95rem;
 }
 
 .logout-btn:hover {
