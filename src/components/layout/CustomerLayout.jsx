@@ -71,12 +71,12 @@ function CustomerLayout({ children }) {
           <div className="footer-left">
             <h4>Contact Us</h4>
             <a href="mailto:khat.eg111@gmail.com">khat.eg111@gmail.com</a>
-            <a href="tel:+201001234567">+201001234567</a>
+            {/* <a href="tel:+201001234567">+201001234567</a> */}
           </div>
           <div className="footer-right">
             <h4>Follow Us</h4>
-            <a href="https://instagram.com/khat" target="_blank" rel="noopener noreferrer">Instagram</a>
-            <a href="https://tiktok.com/@khat" target="_blank" rel="noopener noreferrer">TikTok</a>
+            <a href="https://www.instagram.com/khat.eg1" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href="https://www.tiktok.com/@khat.eg1" target="_blank" rel="noopener noreferrer">TikTok</a>
           </div>
         </div>
         <div className="footer-center">
