@@ -48,7 +48,7 @@ function AdminInventory() {
               <th>Product Name</th>
               <th>Category</th>
               <th>Current Stock</th>
-              <th>Price</th>
+              <th>Price (LE)</th>
               <th>Update Stock</th>
             </tr>
           </thead>
@@ -58,11 +58,11 @@ function AdminInventory() {
                 <td>{product.name}</td>
                 <td>{product.category}</td>
                 <td>
-                  <span className={product.stock > 10 ? 'in-stock' : product.stock > 0 ? 'low-stock' : 'out-stock'}>
+                  <span className={product.stock > 5 ? 'in-stock' : product.stock > 0 ? 'low-stock' : 'out-stock'}>
                     {product.stock}
                   </span>
                 </td>
-                <td>${product.price}</td>
+                <td>{product.price}</td>
                 <td>
                   <div className="stock-update">
                     <input

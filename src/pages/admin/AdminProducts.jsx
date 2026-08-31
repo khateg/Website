@@ -8,26 +8,33 @@ function AdminProducts() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [error, setError] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
+    oldPrice: '',
     category: '',
     stock: '',
     imageUrl: '',
   })
 
   useEffect(() => {
+    console.log('AdminProducts mounted')
     loadProducts()
   }, [])
 
   const loadProducts = async () => {
     try {
       setLoading(true)
+      console.log('Loading products...')
       const data = await productService.getAllProducts()
+      console.log('Products loaded:', data)
       setProducts(data)
-    } catch (error) {
-      console.error('Failed to load products:', error)
+      setError(null)
+    } catch (err) {
+      console.error('Failed to load products:', err)
+      setError(err.message)
     } finally {
       setLoading(false)
     }
@@ -65,6 +72,7 @@ function AdminProducts() {
       name: '',
       description: '',
       price: '',
+      oldPrice: '',
       category: '',
       stock: '',
       imageUrl: '',
@@ -77,6 +85,7 @@ function AdminProducts() {
       name: product.name,
       description: product.description,
       price: product.price,
+      oldPrice: product.oldPrice || '',
       category: product.category,
       stock: product.stock,
       imageUrl: product.imageUrl,
@@ -100,6 +109,8 @@ function AdminProducts() {
         </button>
       </div>
 
+      {error && <div className="error">{error}</div>}
+
       {showForm && (
         <form onSubmit={handleSubmit} className="admin-form">
           <div className="form-grid">
@@ -115,12 +126,16 @@ function AdminProducts() {
 
             <div className="form-group">
               <label>Category *</label>
-              <input
-                type="text"
+              <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 required
-              />
+              >
+                <option value="">Select a category</option>
+                <option value="Notebooks">Notebooks</option>
+                <option value="Wall Arts">Wall Arts</option>
+                <option value="Stickers">Stickers</option>
+              </select>
             </div>
 
             <div className="form-group">
@@ -131,6 +146,16 @@ function AdminProducts() {
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
                 required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Old Price (Optional)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.oldPrice}
+                onChange={(e) => setFormData({ ...formData, oldPrice: e.target.value ? parseFloat(e.target.value) : '' })}
               />
             </div>
 
@@ -171,13 +196,17 @@ function AdminProducts() {
 
       {loading ? (
         <p>Loading products...</p>
+      ) : products.length === 0 ? (
+        <div className="empty-state">
+          <p>No products yet. Click "+ Add Product" to create one.</p>
+        </div>
       ) : (
         <table className="admin-table">
           <thead>
             <tr>
               <th>Name</th>
               <th>Category</th>
-              <th>Price</th>
+              <th>Price (LE)</th>
               <th>Stock</th>
               <th>Actions</th>
             </tr>
@@ -187,7 +216,7 @@ function AdminProducts() {
               <tr key={product.id}>
                 <td>{product.name}</td>
                 <td>{product.category}</td>
-                <td>{product.price} LE</td>
+                <td>{product.price}</td>
                 <td>{product.stock}</td>
                 <td>
                   <button

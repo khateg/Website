@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { orderService } from '../../services/orderService'
 import { ORDER_STATUS } from '../../utils/constants'
+import { formatDate, formatDateTime } from '../../utils/dateUtils'
 import '../styles/pages.css'
 
 function AdminOrders() {
@@ -46,7 +47,7 @@ function AdminOrders() {
           <thead>
             <tr>
               <th>Order ID</th>
-              <th>Customer Email</th>
+              <th>Customer Name</th>
               <th>Date</th>
               <th>Total</th>
               <th>Status</th>
@@ -57,9 +58,9 @@ function AdminOrders() {
             {orders.map(order => (
               <tr key={order.id}>
                 <td>{order.id}</td>
-                <td>{order.customerEmail}</td>
-                <td>{new Date(order.createdAt?.toDate()).toLocaleDateString()}</td>
-                <td>${order.total?.toFixed(2)}</td>
+                <td>{order.customerInfo?.name || order.customerName || order.customerEmail?.split('@')[0] || 'N/A'}</td>
+                <td>{formatDate(order.createdAt)}</td>
+                <td>{order.totalAmount || order.total} LE</td>
                 <td>
                   <select
                     value={order.status}
@@ -88,34 +89,41 @@ function AdminOrders() {
       )}
 
       {selectedOrder && (
-        <div className="order-details">
-          <h3>Order Details</h3>
-          <div className="details-content">
-            <p><strong>Order ID:</strong> {selectedOrder.id}</p>
-            <p><strong>Customer Email:</strong> {selectedOrder.customerEmail}</p>
-            <p><strong>Total:</strong> ${selectedOrder.total?.toFixed(2)}</p>
-            <p><strong>Status:</strong> {selectedOrder.status}</p>
-            <p><strong>Date:</strong> {new Date(selectedOrder.createdAt?.toDate()).toLocaleString()}</p>
+        <div className="modal-overlay" onClick={() => setSelectedOrder(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Order Details</h3>
+              <button className="modal-close" onClick={() => setSelectedOrder(null)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p><strong>Order ID:</strong> {selectedOrder.id}</p>
+              <p><strong>Customer Name:</strong> {selectedOrder.customerInfo?.name || selectedOrder.customerName || selectedOrder.customerEmail?.split('@')[0] || 'N/A'}</p>
+              <p><strong>Customer Email:</strong> <a href={`mailto:${selectedOrder.customerInfo?.email || selectedOrder.customerEmail}`}>{selectedOrder.customerInfo?.email || selectedOrder.customerEmail}</a></p>
+              {selectedOrder.customerInfo?.phone && (
+                <p><strong>Phone Number:</strong> <a href={`tel:${selectedOrder.customerInfo?.phone}`}>{selectedOrder.customerInfo?.phone}</a></p>
+              )}
+              <p><strong>Total:</strong> {selectedOrder.totalAmount || selectedOrder.total} LE</p>
+              <p><strong>Status:</strong> <span className={`status ${selectedOrder.status}`}>{selectedOrder.status}</span></p>
+              <p><strong>Date:</strong> {formatDateTime(selectedOrder.createdAt)}</p>
 
-            <h4>Items:</h4>
-            {selectedOrder.items && selectedOrder.items.length > 0 ? (
-              <ul>
-                {selectedOrder.items.map((item, idx) => (
-                  <li key={idx}>
-                    {item.name} x {item.quantity} = ${(item.price * item.quantity).toFixed(2)}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No items recorded</p>
-            )}
+              <h4>Items:</h4>
+              {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                <ul>
+                  {selectedOrder.items.map((item, idx) => (
+                    <li key={idx}>
+                      {item.name} x {item.quantity} = {(item.price * item.quantity).toFixed(2)} LE
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No items recorded</p>
+              )}
 
-            <h4>Delivery Address:</h4>
-            <p>
-              {selectedOrder.shippingAddress?.street}<br />
-              {selectedOrder.shippingAddress?.city}, {selectedOrder.shippingAddress?.state} {selectedOrder.shippingAddress?.zip}<br />
-              {selectedOrder.shippingAddress?.country}
-            </p>
+              <h4>Delivery Address:</h4>
+              <p>
+                {selectedOrder.customerInfo?.address}
+              </p>
+            </div>
           </div>
         </div>
       )}

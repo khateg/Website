@@ -10,7 +10,7 @@ function AdminLayout({ children }) {
 
   const handleLogout = async () => {
     await signOut(auth)
-    navigate('/admin/login')
+    navigate('/')
   }
 
   return (
@@ -18,26 +18,28 @@ function AdminLayout({ children }) {
       <aside className={`admin-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-header">
           <h2>KHAT Admin</h2>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="toggle-btn">
-            {sidebarOpen ? '←' : '→'}
-          </button>
         </div>
 
         <nav className="sidebar-nav">
           <Link to="/admin/" className="nav-item">
-            <span>📊 Dashboard</span>
+            <span className="nav-icon">📊</span>
+            <span className="nav-text">Dashboard</span>
           </Link>
           <Link to="/admin/products" className="nav-item">
-            <span>📦 Products</span>
+            <span className="nav-icon">📦</span>
+            <span className="nav-text">Products</span>
           </Link>
           <Link to="/admin/orders" className="nav-item">
-            <span>📋 Orders</span>
+            <span className="nav-icon">📋</span>
+            <span className="nav-text">Orders</span>
           </Link>
           <Link to="/admin/customers" className="nav-item">
-            <span>👥 Customers</span>
+            <span className="nav-icon">👥</span>
+            <span className="nav-text">Customers</span>
           </Link>
           <Link to="/admin/inventory" className="nav-item">
-            <span>📈 Inventory</span>
+            <span className="nav-icon">📈</span>
+            <span className="nav-text">Inventory</span>
           </Link>
         </nav>
 

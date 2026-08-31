@@ -22,17 +22,16 @@ function AdminCustomers() {
           if (!customerMap[order.userId]) {
             customerMap[order.userId] = {
               userId: order.userId,
-              email: order.customerEmail,
+              email: order.customerInfo?.email || order.customerEmail || 'Unknown',
+              name: order.customerInfo?.name || 'Unknown',
+              phone: order.customerInfo?.phone || 'N/A',
               totalOrders: 0,
               totalSpent: 0,
-              lastOrder: null,
             }
           }
           customerMap[order.userId].totalOrders += 1
-          customerMap[order.userId].totalSpent += order.total || 0
-          if (!customerMap[order.userId].lastOrder ||
-              new Date(order.createdAt?.toDate()) > new Date(customerMap[order.userId].lastOrder)) {
-            customerMap[order.userId].lastOrder = order.createdAt?.toDate()
+          if (order.status === 'delivered') {
+            customerMap[order.userId].totalSpent += order.totalAmount || 0
           }
         }
       })
@@ -57,28 +56,21 @@ function AdminCustomers() {
         <table className="admin-table">
           <thead>
             <tr>
+              <th>Name</th>
               <th>Email</th>
+              <th>Phone</th>
               <th>Total Orders</th>
               <th>Total Spent</th>
-              <th>Last Order</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {customers.map(customer => (
               <tr key={customer.userId}>
-                <td>{customer.email}</td>
+                <td>{customer.name}</td>
+                <td><a href={`mailto:${customer.email}`}>{customer.email}</a></td>
+                <td><a href={`tel:${customer.phone}`}>{customer.phone}</a></td>
                 <td>{customer.totalOrders}</td>
-                <td>${customer.totalSpent.toFixed(2)}</td>
-                <td>
-                  {customer.lastOrder
-                    ? new Date(customer.lastOrder).toLocaleDateString()
-                    : 'N/A'
-                  }
-                </td>
-                <td>
-                  <button className="btn-secondary">View Orders</button>
-                </td>
+                <td>{customer.totalSpent.toFixed(2)} LE</td>
               </tr>
             ))}
           </tbody>
