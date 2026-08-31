@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../../services/firebase'
-import { doc, getDoc, collection, addDoc } from 'firebase/firestore'
+import { ref, get, set, push, update } from 'firebase/database'
 import { useCart } from '../../context/CartContext'
+import { useProducts } from '../../context/ProductContext'
 import '../styles/pages.css'
 
 function CheckoutPage() {
   const navigate = useNavigate()
   const { cartItems, getTotalPrice, clearCart } = useCart()
+  const { refreshProducts } = useProducts()
 
   const [user, setUser] = useState(null)
   const [formData, setFormData] = useState({
@@ -23,19 +25,19 @@ function CheckoutPage() {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (!currentUser) {
         // Not signed in, redirect to signup
-        navigate('/signup', { state: { returnTo: '/checkout' }, replace: true })
+        navigate('/signup', { state: { from: 'checkout' }, replace: true })
         return
       }
 
       setUser(currentUser)
 
-      // Fetch user profile from Firestore
+      // Fetch user profile from Realtime Database
       try {
-        const userDocRef = doc(db, 'users', currentUser.uid)
-        const userDoc = await getDoc(userDocRef)
+        const userRef = ref(db, `users/${currentUser.uid}`)
+        const snapshot = await get(userRef)
 
-        if (userDoc.exists()) {
-          const userData = userDoc.data()
+        if (snapshot.exists()) {
+          const userData = snapshot.val()
           setFormData({
             name: userData.name || '',
             email: userData.email || '',
@@ -77,6 +79,23 @@ function CheckoutPage() {
     }
 
     try {
+      // Verify stock availability before creating order
+      for (const cartItem of cartItems) {
+        const productRef = ref(db, `products/${cartItem.id}`)
+        const snapshot = await get(productRef)
+        if (!snapshot.exists()) {
+          setError(`Product ${cartItem.name} no longer exists`)
+          setLoading(false)
+          return
+        }
+        const currentStock = snapshot.val().stock || 0
+        if (currentStock < cartItem.quantity) {
+          setError(`Only ${currentStock} of ${cartItem.name} available. Please update your cart.`)
+          setLoading(false)
+          return
+        }
+      }
+
       // Create order
       const orderData = {
         userId: user.uid,
@@ -91,19 +110,34 @@ function CheckoutPage() {
         totalAmount: getTotalPrice(),
         status: 'pending',
         paymentMethod: 'COD',
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
 
-      // Save order to Firestore
-      const ordersRef = collection(db, 'orders')
-      const docRef = await addDoc(ordersRef, orderData)
+      // Update stock for each product
+      for (const cartItem of cartItems) {
+        const productRef = ref(db, `products/${cartItem.id}`)
+        const snapshot = await get(productRef)
+        const currentStock = snapshot.val().stock || 0
+        const newStock = currentStock - cartItem.quantity
+        await update(productRef, { stock: newStock })
+      }
+
+      // Save order to Realtime Database
+      const ordersRef = ref(db, 'orders')
+      const newOrderRef = push(ordersRef)
+      const orderId = newOrderRef.key
+
+      await set(newOrderRef, orderData)
 
       // Clear cart
       clearCart()
 
+      // Refresh products to show updated stock
+      await refreshProducts()
+
       // Redirect to success page
-      navigate(`/order-success/${docRef.id}`, { replace: true })
+      navigate(`/order-success/${orderId}`, { replace: true })
     } catch (err) {
       setError('Failed to place order. Please try again.')
       console.error(err)
@@ -121,7 +155,7 @@ function CheckoutPage() {
       <div className="container">
         <div className="checkout-content">
           <div className="checkout-form">
-            <h1>Order Summary</h1>
+            <h1>Profile Details</h1>
 
             {error && <div className="error">{error}</div>}
 
@@ -189,17 +223,25 @@ function CheckoutPage() {
           </div>
 
           <div className="checkout-summary">
-            <h2>Cart Summary</h2>
+            <h2>Order Summary</h2>
             <div className="order-items">
               {cartItems.map(item => (
                 <div key={item.id} className="order-item">
                   <span>{item.name} x {item.quantity}</span>
-                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+                  <span>{(item.price * item.quantity).toFixed(2)} LE</span>
                 </div>
               ))}
             </div>
+            <div className="order-item">
+              <span>Subtotal:</span>
+              <span>{getTotalPrice().toFixed(2)} LE</span>
+            </div>
+            <div className="order-item">
+              <span>Shipping:</span>
+              <span>0.00 LE</span>
+            </div>
             <div className="order-total">
-              <strong>Total: ${getTotalPrice().toFixed(2)}</strong>
+              <strong>Total: {getTotalPrice().toFixed(2)} LE</strong>
             </div>
             <p className="payment-method">Payment Method: Cash on Delivery</p>
           </div>

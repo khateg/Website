@@ -5,11 +5,13 @@ import { signOut } from 'firebase/auth'
 import { FiShoppingCart } from 'react-icons/fi'
 import { MdShoppingCart } from 'react-icons/md'
 import { AiOutlineShoppingCart } from 'react-icons/ai'
+import { useCart } from '../../context/CartContext'
 import logo from '../../assets/logo.png'
 import '../styles/layout.css'
 
 function CustomerLayout({ children }) {
   const [user, setUser] = useState(null)
+  const { cartItems, clearCart } = useCart()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -21,6 +23,7 @@ function CustomerLayout({ children }) {
 
   const handleLogout = async () => {
     await signOut(auth)
+    clearCart()
     navigate('/')
   }
 
@@ -36,7 +39,15 @@ function CustomerLayout({ children }) {
           <ul className="nav-links">
             <li className="cart-options">
               <Link to="/cart" className="cart-link-feather">
-                <FiShoppingCart size={20} /> Cart
+                <div className="cart-icon-container">
+                  <FiShoppingCart size={20} />
+                  {cartItems.length > 0 && (
+                    <span className="cart-badge">
+                      {cartItems.reduce((total, item) => total + (item.quantity || 1), 0)}
+                    </span>
+                  )}
+                </div>
+                Cart
               </Link>
             </li>
             {user ? (

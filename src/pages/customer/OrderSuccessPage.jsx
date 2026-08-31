@@ -1,9 +1,17 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import '../styles/pages.css'
 
 function OrderSuccessPage() {
   const { orderId } = useParams()
   const navigate = useNavigate()
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyOrderId = () => {
+    navigator.clipboard.writeText(orderId)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <div className="order-success-page">
@@ -16,7 +24,26 @@ function OrderSuccessPage() {
         </p>
 
         <div className="order-id">
-          Order ID: {orderId}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <span>Order ID: {orderId}</span>
+            <button
+              onClick={handleCopyOrderId}
+              className="btn-copy"
+              title="Copy Order ID"
+              style={{
+                padding: '0.5rem 1rem',
+                background: 'var(--color-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                transition: 'all var(--transition-normal)',
+              }}
+            >
+              {copied ? '✓ Copied!' : 'Copy'}
+            </button>
+          </div>
         </div>
 
         <p style={{ fontSize: '0.9rem', color: 'var(--color-gray-dark)' }}>
