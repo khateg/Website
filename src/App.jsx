@@ -10,6 +10,7 @@ import HomePage from './pages/customer/HomePage'
 import ProductDetailPage from './pages/customer/ProductDetailPage'
 import CartPage from './pages/customer/CartPage'
 import CheckoutPage from './pages/customer/CheckoutPage'
+import CheckoutProfilePage from './pages/customer/CheckoutProfilePage'
 import OrderSuccessPage from './pages/customer/OrderSuccessPage'
 import CustomerDashboard from './pages/customer/CustomerDashboard'
 import LoginPage from './pages/customer/LoginPage'
@@ -23,7 +24,10 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import CustomerLayout from './components/layout/CustomerLayout'
 import AdminLayout from './components/layout/AdminLayout'
 
-const ADMIN_EMAIL = 'khat.eg111@gmail.com'
+const ADMIN_EMAILS = [
+  'khat.eg111@gmail.com',
+  'omarttt50@gmail.com' // Test admin account
+]
 
 function App() {
   const [user, setUser] = useState(null)
@@ -34,7 +38,19 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
       if (currentUser) {
-        setIsAdmin(currentUser.email === ADMIN_EMAIL)
+        console.log('Current user email:', currentUser.email)
+        console.log('Current user email length:', currentUser.email?.length)
+        console.log('Admin emails:', ADMIN_EMAILS)
+
+        const userEmail = currentUser.email?.toLowerCase().trim()
+        const isAdminUser = ADMIN_EMAILS.some(email => {
+          const adminEmail = email.toLowerCase().trim()
+          const match = userEmail === adminEmail
+          console.log(`Comparing "${userEmail}" (${userEmail?.length}) with "${adminEmail}" (${adminEmail.length}): ${match}`)
+          return match
+        })
+        setIsAdmin(isAdminUser)
+        console.log('Final is admin:', isAdminUser)
       } else {
         setIsAdmin(false)
       }
@@ -43,6 +59,17 @@ function App() {
 
     return unsubscribe
   }, [])
+
+  // Redirect admin users after login
+  useEffect(() => {
+    if (user && isAdmin && (window.location.pathname === '/login' || window.location.pathname === '/signup')) {
+      const timer = setTimeout(() => {
+        console.log('Redirecting admin to /admin')
+        window.location.href = '/admin'
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [user, isAdmin])
 
   if (loading) {
     return <div className="loading">Loading...</div>
@@ -59,10 +86,14 @@ function App() {
             <AdminLayout>
               <Routes>
                 <Route path="/" element={<AdminDashboard />} />
+                <Route path="/products" element={<AdminDashboard />} />
+                <Route path="/orders" element={<AdminDashboard />} />
+                <Route path="/customers" element={<AdminDashboard />} />
+                <Route path="/inventory" element={<AdminDashboard />} />
               </Routes>
             </AdminLayout>
           ) : (
-            <AdminLogin />
+            <Navigate to="/" replace />
           )
         } />
 
@@ -74,6 +105,7 @@ function App() {
               <Route path="/product/:id" element={<ProductDetailPage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/checkout-profile" element={<CheckoutProfilePage />} />
               <Route path="/order-success/:orderId" element={<OrderSuccessPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
