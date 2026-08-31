@@ -1,9 +1,26 @@
-import { createContext, useState, useContext } from 'react'
+import { createContext, useState, useContext, useEffect } from 'react'
 
 const CartContext = createContext()
+const CART_STORAGE_KEY = 'khat_cart'
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([])
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem(CART_STORAGE_KEY)
+      return saved ? JSON.parse(saved) : []
+    } catch (err) {
+      console.error('Failed to load cart from storage:', err)
+      return []
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems))
+    } catch (err) {
+      console.error('Failed to save cart to storage:', err)
+    }
+  }, [cartItems])
 
   const addToCart = (product, quantity = 1) => {
     setCartItems(prevItems => {
@@ -29,14 +46,20 @@ export function CartProvider({ children }) {
       return
     }
     setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.id === productId ? { ...item, quantity } : item
-      )
+      prevItems.map(item => {
+        if (item.id === productId) {
+          const maxQuantity = item.stock || 999
+          const validQuantity = Math.min(quantity, maxQuantity)
+          return { ...item, quantity: validQuantity }
+        }
+        return item
+      })
     )
   }
 
   const clearCart = () => {
     setCartItems([])
+    localStorage.removeItem(CART_STORAGE_KEY)
   }
 
   const getTotalPrice = () => {
