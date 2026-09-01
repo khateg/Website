@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth'
 import { auth, db } from '../../services/firebase'
 import { ref, get, set } from 'firebase/database'
 import '../styles/pages.css'
@@ -17,6 +17,50 @@ function LoginPage() {
   const isFromCheckout = location.state?.from === 'checkout'
   const returnTo = isFromCheckout ? '/checkout-profile' : '/'
 
+  const handleUserProfile = async (userCredential) => {
+    const userRef = ref(db, `users/${userCredential.uid}`)
+    try {
+      const snapshot = await get(userRef)
+      if (!snapshot.exists()) {
+        const userData = {
+          name: userCredential.displayName || '',
+          email: userCredential.email || '',
+          phone: '',
+          address: '',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+        await set(userRef, userData)
+        console.log('User document created successfully')
+      }
+    } catch (dbError) {
+      console.error('Database error:', dbError)
+    }
+  }
+
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth)
+        if (result) {
+          console.log('Sign-in successful! User:', result.user.email)
+          await handleUserProfile(result.user)
+          navigate(returnTo, { replace: true })
+        }
+      } catch (err) {
+        if (err.code === 'auth/popup-closed-by-user') {
+          setError('Sign-in cancelled')
+        } else if (err.code === 'auth/network-request-failed') {
+          setError('Network error. Please check your connection.')
+        } else if (err.code !== 'auth/operation-not-supported-in-this-environment') {
+          setError(err.message || 'Failed to sign in with Google')
+        }
+        console.error(err)
+      }
+    }
+    handleRedirectResult()
+  }, [returnTo, navigate])
+
   const handleGoogleSignIn = async () => {
     console.log('Starting Google sign in...')
     setError('')
@@ -25,44 +69,11 @@ function LoginPage() {
     try {
       console.log('Creating Google provider...')
       const provider = new GoogleAuthProvider()
-      console.log('Showing sign-in popup...')
-      const userCredential = await signInWithPopup(auth, provider)
-      console.log('Sign-in successful! User:', userCredential.user.email)
-
-      // Check if user profile exists, create if new
-      const userRef = ref(db, `users/${userCredential.user.uid}`)
-
-      try {
-        const snapshot = await get(userRef)
-
-        if (!snapshot.exists()) {
-          const userData = {
-            name: userCredential.user.displayName || '',
-            email: userCredential.user.email || '',
-            phone: '',
-            address: '',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
-
-          await set(userRef, userData)
-          console.log('User document created successfully')
-        }
-      } catch (dbError) {
-        console.error('Database error:', dbError)
-      }
-
-      navigate(returnTo, { replace: true })
+      console.log('Redirecting to Google sign-in...')
+      await signInWithRedirect(auth, provider)
     } catch (err) {
-      if (err.code === 'auth/popup-closed-by-user') {
-        setError('Sign-in cancelled')
-      } else if (err.code === 'auth/network-request-failed') {
-        setError('Network error. Please check your connection.')
-      } else {
-        setError(err.message || 'Failed to sign in with Google')
-      }
+      setError(err.message || 'Failed to sign in with Google')
       console.error(err)
-    } finally {
       setLoading(false)
     }
   }

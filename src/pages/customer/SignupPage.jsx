@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth'
 import { auth, db } from '../../services/firebase'
 import { ref, set } from 'firebase/database'
 import '../styles/pages.css'
@@ -14,36 +14,46 @@ function SignupPage() {
   const isFromCheckout = location.state?.from === 'checkout'
   const returnTo = isFromCheckout ? '/checkout-profile' : '/'
 
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth)
+        if (result) {
+          const userRef = ref(db, `users/${result.user.uid}`)
+          await set(userRef, {
+            name: result.user.displayName || '',
+            email: result.user.email || '',
+            phone: '',
+            address: '',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          })
+          navigate(returnTo, { replace: true })
+        }
+      } catch (err) {
+        if (err.code === 'auth/popup-closed-by-user') {
+          setError('Sign-up cancelled')
+        } else if (err.code === 'auth/network-request-failed') {
+          setError('Network error. Please check your connection.')
+        } else if (err.code !== 'auth/operation-not-supported-in-this-environment') {
+          setError(err.message || 'Failed to sign up with Google')
+        }
+        console.error(err)
+      }
+    }
+    handleRedirectResult()
+  }, [returnTo, navigate])
+
   const handleGoogleSignUp = async () => {
     setError('')
     setLoading(true)
 
     try {
       const provider = new GoogleAuthProvider()
-      const userCredential = await signInWithPopup(auth, provider)
-
-      // Create profile with Google info
-      const userRef = ref(db, `users/${userCredential.user.uid}`)
-      await set(userRef, {
-        name: userCredential.user.displayName || '',
-        email: userCredential.user.email || '',
-        phone: '',
-        address: '',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      })
-
-      navigate(returnTo, { replace: true })
+      await signInWithRedirect(auth, provider)
     } catch (err) {
-      if (err.code === 'auth/popup-closed-by-user') {
-        setError('Sign-in cancelled')
-      } else if (err.code === 'auth/network-request-failed') {
-        setError('Network error. Please check your connection.')
-      } else {
-        setError(err.message || 'Failed to sign up with Google')
-      }
+      setError(err.message || 'Failed to sign up with Google')
       console.error(err)
-    } finally {
       setLoading(false)
     }
   }
