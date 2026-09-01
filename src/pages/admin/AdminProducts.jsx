@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { productService } from '../../services/productService'
+import { cloudinaryService } from '../../services/cloudinaryService'
 import '../styles/pages.css'
 
 function AdminProducts() {
@@ -9,6 +10,7 @@ function AdminProducts() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [error, setError] = useState(null)
+  const [uploading, setUploading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -16,7 +18,7 @@ function AdminProducts() {
     oldPrice: '',
     category: '',
     stock: '',
-    imageUrl: '',
+    images: [],
   })
 
   useEffect(() => {
@@ -51,8 +53,10 @@ function AdminProducts() {
       loadProducts()
       resetForm()
       setShowForm(false)
+      setError(null)
     } catch (error) {
       console.error('Failed to save product:', error)
+      setError('Failed to save product: ' + error.message)
     }
   }
 
@@ -75,7 +79,7 @@ function AdminProducts() {
       oldPrice: '',
       category: '',
       stock: '',
-      imageUrl: '',
+      images: [],
     })
     setEditingId(null)
   }
@@ -88,10 +92,34 @@ function AdminProducts() {
       oldPrice: product.oldPrice || '',
       category: product.category,
       stock: product.stock,
-      imageUrl: product.imageUrl,
+      images: product.images || [],
     })
     setEditingId(product.id)
     setShowForm(true)
+  }
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const imageUrl = await cloudinaryService.uploadImage(file)
+      setFormData({ ...formData, images: [...formData.images, imageUrl] })
+      setError(null)
+    } catch (err) {
+      setError('Failed to upload image. Please try again.')
+      console.error('Upload error:', err)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleRemoveImage = (index) => {
+    setFormData({
+      ...formData,
+      images: formData.images.filter((_, i) => i !== index),
+    })
   }
 
   return (
@@ -178,17 +206,45 @@ function AdminProducts() {
             </div>
 
             <div className="form-group full-width">
-              <label>Image URL (Cloudinary)</label>
-              <input
-                type="text"
-                value={formData.imageUrl}
-                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                placeholder="https://res.cloudinary.com/..."
-              />
+              <label>Product Images</label>
+              <div className="image-upload-section">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                  id="product-image"
+                  style={{ display: 'none' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('product-image').click()}
+                  disabled={uploading}
+                  className="btn-secondary"
+                >
+                  {uploading ? 'Uploading...' : '+ Add Image'}
+                </button>
+                {formData.images.length > 0 && (
+                  <div className="images-gallery">
+                    {formData.images.map((imageUrl, index) => (
+                      <div key={index} className="image-preview">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="image-remove-btn"
+                        >
+                          ×
+                        </button>
+                        <img src={imageUrl} alt={`Product ${index + 1}`} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <button type="submit" className="btn-success">
+          <button type="submit" className="btn-success" disabled={uploading}>
             {editingId ? 'Update Product' : 'Add Product'}
           </button>
         </form>

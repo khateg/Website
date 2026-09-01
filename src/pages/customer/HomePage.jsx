@@ -1,9 +1,42 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useProducts } from '../../context/ProductContext'
 import { useCart } from '../../context/CartContext'
 import { getAvailableStock } from '../../utils/inventoryUtils'
 import '../styles/pages.css'
+
+function ImageCarousel({ images, imageUrl, productName }) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  // Handle both old imageUrl and new images array
+  const displayImages = images && images.length > 0 ? images : (imageUrl ? [imageUrl] : [null])
+  const hasMultipleImages = displayImages.length > 1
+
+  useEffect(() => {
+    if (!hasMultipleImages) return
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % displayImages.length)
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [displayImages.length, hasMultipleImages])
+
+  return (
+    <div className="image-carousel">
+      {displayImages[currentIndex] ? (
+        <img src={displayImages[currentIndex]} alt={productName} />
+      ) : (
+        <div className="image-placeholder">📸</div>
+      )}
+      {hasMultipleImages && (
+        <div className="image-counter">
+          {currentIndex + 1}/{displayImages.length}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function ProductCardActions({ product, addToCart, cartItems }) {
   const [quantity, setQuantity] = useState(1)
@@ -48,6 +81,17 @@ function HomePage() {
   const { products, loading, error } = useProducts()
   const { addToCart, cartItems } = useCart()
   const navigate = useNavigate()
+  const searchParams = new URLSearchParams(window.location.search)
+  const searchQuery = searchParams.get('search') || ''
+
+  const filteredProducts = searchQuery
+    ? products.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : products
 
   return (
     <div className="home-page">
@@ -60,27 +104,34 @@ function HomePage() {
 
       <section className="shop-section">
         <div className="container">
-          <h2>Featured Products</h2>
+          <div className="section-header-with-button">
+            <h2>{searchQuery ? `Search Results for "${searchQuery}"` : 'Featured Products'}</h2>
+            {searchQuery && (
+              <Link to="/" className="btn-back-to-all">
+                Return to All Products
+              </Link>
+            )}
+          </div>
           {loading && <div className="loading">Loading products...</div>}
           {error && <div className="error">{error}</div>}
           {!loading && !error && (
             <>
-              {products.length === 0 ? (
+              {filteredProducts.length === 0 ? (
                 <div className="empty-state">
-                  <p>No products available yet.</p>
+                  <p>{searchQuery ? 'No products found matching your search.' : 'No products available yet.'}</p>
                   <p>Check back soon!</p>
                 </div>
               ) : (
                 <div className="grid grid-3">
-                  {products.map(product => (
+                  {filteredProducts.map(product => (
                     <div key={product.id} className="product-card">
                       <Link to={`/product/${product.id}`} className="card-link">
                         <div className="product-image-container">
-                          {product.imageUrl ? (
-                            <img src={product.imageUrl} alt={product.name} />
-                          ) : (
-                            <div className="image-placeholder">📸</div>
-                          )}
+                          <ImageCarousel
+                            images={product.images}
+                            imageUrl={product.imageUrl}
+                            productName={product.name}
+                          />
                         </div>
                         <div className="card-content">
                           <h3>{product.name}</h3>
