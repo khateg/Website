@@ -5,12 +5,14 @@ import { signOut } from 'firebase/auth'
 import { FiShoppingCart } from 'react-icons/fi'
 import { MdShoppingCart } from 'react-icons/md'
 import { AiOutlineShoppingCart } from 'react-icons/ai'
+import { BiSearch } from 'react-icons/bi'
 import { useCart } from '../../context/CartContext'
 import logo from '../../assets/logo.png'
 import '../styles/layout.css'
 
 function CustomerLayout({ children }) {
   const [user, setUser] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const { cartItems, clearCart } = useCart()
   const navigate = useNavigate()
 
@@ -27,6 +29,14 @@ function CustomerLayout({ children }) {
     navigate('/')
   }
 
+  const handleSearch = (e) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      navigate(`/?search=${encodeURIComponent(searchQuery)}`)
+      setSearchQuery('')
+    }
+  }
+
   return (
     <div className="customer-layout">
       <nav className="navbar">
@@ -35,6 +45,19 @@ function CustomerLayout({ children }) {
             <img src={logo} alt="Khat Logo" className="logo-img" />
             <span className="logo-text">KHAT</span>
           </Link>
+
+          <form className="search-form" onSubmit={handleSearch}>
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+            <button type="submit" className="search-btn">
+              <BiSearch size={20} />
+            </button>
+          </form>
 
           <ul className="nav-links">
             <li className="cart-options">
