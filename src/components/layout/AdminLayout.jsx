@@ -1,12 +1,24 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { auth } from '../../services/firebase'
 import { signOut } from 'firebase/auth'
 import '../styles/admin-layout.css'
 
 function AdminLayout({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768
+      setIsMobile(mobile)
+      setSidebarOpen(!mobile)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const handleLogout = async () => {
     await signOut(auth)
@@ -54,6 +66,12 @@ function AdminLayout({ children }) {
             ☰
           </button>
           <h1>Admin Dashboard</h1>
+          {sidebarOpen && isMobile && (
+            <div
+              className="sidebar-overlay"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
         </header>
 
         <main className="admin-content">
