@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
 import { auth, db } from '../../services/firebase'
 import { ref, get, set } from 'firebase/database'
+import { FcGoogle } from 'react-icons/fc'
 import '../styles/pages.css'
 
 function LoginPage() {
@@ -84,7 +85,8 @@ function LoginPage() {
           }}
           disabled={loading}
         >
-          {loading ? 'Signing In...' : '🔍 Sign In with Google'}
+          <FcGoogle size={20} />
+          {loading ? 'Signing In...' : 'Sign In with Google'}
         </button>
 
         <div className="divider">or</div>
