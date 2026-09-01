@@ -35,52 +35,93 @@ function CartPage() {
           </div>
         ) : (
           <div className="cart-content">
-            <table className="cart-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Price</th>
-                  <th>Quantity</th>
-                  <th>Total</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
+            <div className="cart-items-container">
+              <table className="cart-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Price (LE)</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cartItems.map(item => (
+                    <tr key={item.id}>
+                      <td className="product-name">
+                        <div>
+                          {item.name}
+                          {limitReached === item.id && (
+                            <div className="stock-limit-warning">
+                              ⚠️ Maximum stock available: {item.stock}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="product-price">{item.price.toFixed(2)}</td>
+                      <td className="product-quantity">
+                        <input
+                          type="number"
+                          min="1"
+                          max={item.stock || 999}
+                          value={item.quantity}
+                          onChange={(e) => handleQuantityChange(item, parseInt(e.target.value))}
+                        />
+                      </td>
+                      <td className="product-total">{(item.price * item.quantity).toFixed(2)}</td>
+                      <td className="product-action">
+                        <button
+                          className="btn-remove"
+                          onClick={() => handleRemove(item.id)}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="cart-items-mobile">
                 {cartItems.map(item => (
-                  <tr key={item.id}>
-                    <td className="product-name">
-                      <div>
-                        {item.name}
-                        {limitReached === item.id && (
-                          <div className="stock-limit-warning">
-                            ⚠️ Maximum stock available: {item.stock}
-                          </div>
-                        )}
+                  <div key={item.id} className="cart-item-card">
+                    <div className="card-header">
+                      <h3 className="card-title">{item.name}</h3>
+                      <button
+                        className="btn-remove-mobile"
+                        onClick={() => handleRemove(item.id)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    {limitReached === item.id && (
+                      <div className="stock-limit-warning">
+                        ⚠️ Maximum stock available: {item.stock}
                       </div>
-                    </td>
-                    <td className="product-price">{item.price.toFixed(2)} LE</td>
-                    <td className="product-quantity">
+                    )}
+                    <div className="card-row">
+                      <span className="label">Price:</span>
+                      <span className="value">{item.price.toFixed(2)} LE</span>
+                    </div>
+                    <div className="card-row">
+                      <span className="label">Quantity:</span>
                       <input
                         type="number"
                         min="1"
                         max={item.stock || 999}
                         value={item.quantity}
                         onChange={(e) => handleQuantityChange(item, parseInt(e.target.value))}
+                        className="quantity-input-mobile"
                       />
-                    </td>
-                    <td className="product-total">{(item.price * item.quantity).toFixed(2)} LE</td>
-                    <td className="product-action">
-                      <button
-                        className="btn-remove"
-                        onClick={() => handleRemove(item.id)}
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
+                    </div>
+                    <div className="card-row total">
+                      <span className="label">Total:</span>
+                      <span className="value">{(item.price * item.quantity).toFixed(2)} LE</span>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
 
             <div className="cart-summary">
               <h3>Order Summary</h3>
