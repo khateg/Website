@@ -2,11 +2,15 @@ import { useEffect, useState } from 'react'
 import { auth, db } from '../../services/firebase'
 import { ref, get, set } from 'firebase/database'
 import { orderService } from '../../services/orderService'
+import { customRequestService } from '../../services/customRequestService'
+import { useCart } from '../../context/CartContext'
 import { formatDate, formatDateTime } from '../../utils/dateUtils'
 import '../styles/pages.css'
 
 function CustomerDashboard() {
+  const { addToCart } = useCart()
   const [orders, setOrders] = useState([])
+  const [customRequests, setCustomRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState(null)
   const [profileData, setProfileData] = useState({
@@ -19,6 +23,9 @@ function CustomerDashboard() {
   const [saveError, setError] = useState('')
   const [saveSuccess, setSaveSuccess] = useState('')
   const [selectedOrder, setSelectedOrder] = useState(null)
+  const [selectedCustomRequest, setSelectedCustomRequest] = useState(null)
+  const [addedToCart, setAddedToCart] = useState({})
+  const [cartMessage, setCartMessage] = useState('')
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -26,6 +33,7 @@ function CustomerDashboard() {
         setUser(currentUser)
         loadUserProfile(currentUser.uid)
         loadOrders(currentUser.uid)
+        loadCustomRequests(currentUser.email)
       } else {
         setLoading(false)
       }
@@ -61,6 +69,15 @@ function CustomerDashboard() {
       console.error('Failed to load orders:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadCustomRequests = async (email) => {
+    try {
+      const data = await customRequestService.getCustomRequestsByEmail(email)
+      setCustomRequests(data)
+    } catch (error) {
+      console.error('Failed to load custom requests:', error)
     }
   }
 
@@ -114,6 +131,31 @@ function CustomerDashboard() {
   const getDisplayName = () => {
     if (profileData.name) return profileData.name
     return user.email.split('@')[0]
+  }
+
+  const handleAddCustomToCart = (request) => {
+    const customProduct = {
+      id: `custom-${request.id}`,
+      name: `Custom Order - ${new Date(request.createdAt).toLocaleDateString()}`,
+      price: request.price || 0,
+      category: 'Custom',
+      description: request.description || 'Custom order',
+      customRequest: {
+        id: request.id,
+        description: request.description,
+        textToAdd: request.textToAdd,
+        colors: request.colors,
+        image: request.image,
+      }
+    }
+
+    addToCart(customProduct, 1)
+    setAddedToCart(prev => ({ ...prev, [request.id]: true }))
+    setCartMessage('Custom request added to cart!')
+
+    setTimeout(() => {
+      setCartMessage('')
+    }, 3000)
   }
 
   return (
@@ -233,6 +275,92 @@ function CustomerDashboard() {
                 ))}
               </tbody>
             </table>
+          )}
+        </div>
+
+        <div className="dashboard-section">
+          <h2>My Custom Requests</h2>
+
+          {cartMessage && (
+            <div className="success" style={{ marginBottom: '1rem' }}>
+              {cartMessage}
+            </div>
+          )}
+
+          {customRequests.length === 0 ? (
+            <p>You haven't submitted any custom requests yet.</p>
+          ) : (
+            <div className="custom-requests-list">
+              {customRequests.map(request => (
+                <div key={request.id} className="custom-request-item">
+                  <div className="request-summary">
+                    <div className="request-info">
+                      <p className="request-date">Submitted on {formatDate(request.createdAt)}</p>
+                      <span className={`status-badge status-${request.status}`}>{request.status}</span>
+                      {request.status === 'approved' && request.price && (
+                        <span className="price-badge">{request.price} LE</span>
+                      )}
+                    </div>
+                    <div className="request-actions">
+                      {request.status === 'approved' && !addedToCart[request.id] && (
+                        <button
+                          className="btn-add-custom-to-cart"
+                          onClick={() => handleAddCustomToCart(request)}
+                        >
+                          Add to Cart
+                        </button>
+                      )}
+                      {addedToCart[request.id] && (
+                        <span className="added-to-cart-text">✓ Added to Cart</span>
+                      )}
+                      <button
+                        className="btn-secondary"
+                        onClick={() => setSelectedCustomRequest(selectedCustomRequest?.id === request.id ? null : request)}
+                        style={{ padding: '0.5rem 0.8rem', fontSize: '0.9rem' }}
+                      >
+                        {selectedCustomRequest?.id === request.id ? 'Hide' : 'View'} Details
+                      </button>
+                    </div>
+                  </div>
+
+                  {selectedCustomRequest?.id === request.id && (
+                    <div className="request-details-expanded">
+                      {request.status === 'approved' && request.price && (
+                        <div className="detail-item price-highlight">
+                          <strong>Price:</strong>
+                          <p className="price-value">{request.price} LE</p>
+                        </div>
+                      )}
+
+                      {request.description && (
+                        <div className="detail-item">
+                          <strong>Description:</strong>
+                          <p>{request.description}</p>
+                        </div>
+                      )}
+                      {request.textToAdd && (
+                        <div className="detail-item">
+                          <strong>Text to Add:</strong>
+                          <p>{request.textToAdd}</p>
+                        </div>
+                      )}
+                      {request.colors && (
+                        <div className="detail-item">
+                          <strong>Colors:</strong>
+                          <p>{request.colors}</p>
+                        </div>
+                      )}
+                      {request.image && (
+                        <div className="detail-item">
+                          <strong>Uploaded Image:</strong>
+                          <img src={request.image} alt="Custom request" className="custom-request-image" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
 

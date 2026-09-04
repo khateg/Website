@@ -19,6 +19,7 @@ import SignupPage from './pages/customer/SignupPage'
 // Admin pages
 import AdminLogin from './pages/admin/AdminLogin'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminCustomRequests from './pages/admin/AdminCustomRequests'
 
 // Layout
 import CustomerLayout from './components/layout/CustomerLayout'
@@ -90,6 +91,7 @@ function App() {
                 <Route path="/orders" element={<AdminDashboard />} />
                 <Route path="/customers" element={<AdminDashboard />} />
                 <Route path="/inventory" element={<AdminDashboard />} />
+                <Route path="/custom-requests" element={<AdminCustomRequests />} />
               </Routes>
             </AdminLayout>
           ) : (

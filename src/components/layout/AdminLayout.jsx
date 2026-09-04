@@ -53,6 +53,10 @@ function AdminLayout({ children }) {
             <span className="nav-icon">📈</span>
             <span className="nav-text">Inventory</span>
           </Link>
+          <Link to="/admin/custom-requests" className="nav-item">
+            <span className="nav-icon">✨</span>
+            <span className="nav-text">Custom Requests</span>
+          </Link>
         </nav>
 
         <button onClick={handleLogout} className="logout-btn">

@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useProducts } from '../../context/ProductContext'
 import { useCart } from '../../context/CartContext'
 import { getAvailableStock } from '../../utils/inventoryUtils'
+import { CATEGORIES } from '../../utils/constants'
+import CustomRequestForm from '../../components/CustomRequestForm'
 import '../styles/pages.css'
 
 function ImageCarousel({ images, imageUrl, productName }) {
@@ -83,15 +85,18 @@ function HomePage() {
   const navigate = useNavigate()
   const searchParams = new URLSearchParams(window.location.search)
   const searchQuery = searchParams.get('search') || ''
+  const [selectedCategory, setSelectedCategory] = useState(null)
 
-  const filteredProducts = searchQuery
-    ? products.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.category.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : products
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = !searchQuery ||
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchQuery.toLowerCase())
+
+    const matchesCategory = !selectedCategory || product.category === selectedCategory
+
+    return matchesSearch && matchesCategory
+  })
 
   return (
     <div className="home-page">
@@ -112,13 +117,40 @@ function HomePage() {
               </Link>
             )}
           </div>
+
+          <div className="category-filters">
+            <button
+              className={`category-btn ${!selectedCategory ? 'active' : ''}`}
+              onClick={() => {
+                setSelectedCategory(null)
+                window.history.replaceState({}, '', '/')
+              }}
+            >
+              All Products
+            </button>
+            {CATEGORIES.map(category => (
+              <button
+                key={category}
+                className={`category-btn ${selectedCategory === category ? 'active' : ''}`}
+                onClick={() => {
+                  setSelectedCategory(category)
+                  window.history.replaceState({}, '', '/')
+                }}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
+          {selectedCategory === 'Custom' && <CustomRequestForm />}
+
           {loading && <div className="loading">Loading products...</div>}
           {error && <div className="error">{error}</div>}
-          {!loading && !error && (
+          {!loading && !error && selectedCategory !== 'Custom' && (
             <>
               {filteredProducts.length === 0 ? (
                 <div className="empty-state">
-                  <p>{searchQuery ? 'No products found matching your search.' : 'No products available yet.'}</p>
+                  <p>{searchQuery ? 'No products found matching your search.' : selectedCategory ? `No products found in ${selectedCategory}.` : 'No products available yet.'}</p>
                   <p>Check back soon!</p>
                 </div>
               ) : (
