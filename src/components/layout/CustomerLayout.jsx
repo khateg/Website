@@ -43,7 +43,6 @@ function CustomerLayout({ children }) {
         <div className="nav-container">
           <Link to="/" className="logo">
             <img src={logo} alt="Khat Logo" className="logo-img" />
-            <span className="logo-text">KHAT</span>
           </Link>
 
           <form className="search-form" onSubmit={handleSearch}>
@@ -70,7 +69,7 @@ function CustomerLayout({ children }) {
                     </span>
                   )}
                 </div>
-                Cart
+                <span className="cart-text">Cart</span>
               </Link>
             </li>
             {user ? (
