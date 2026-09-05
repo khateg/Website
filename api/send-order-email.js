@@ -28,13 +28,15 @@ const formatItems = (items = []) =>
 
 const createEmailHtml = (order, recipientType) => {
   const customer = order.customerInfo || {};
-  const greeting =
-    recipientType === "customer"
+  const isShippedNotification = order.notificationType === "shipped";
+  const greeting = isShippedNotification
+    ? `Good news ${escapeHtml(customer.name)}, your order has shipped.`
+    : recipientType === "customer"
       ? `Thank you ${escapeHtml(customer.name)} for your order.`
       : "A new order has been placed.";
 
   return `
-    <h2>Khat order confirmation</h2>
+    <h2>${isShippedNotification ? "Your order has shipped" : "Khat order confirmation"}</h2>
     <p>${greeting}</p>
     <p><strong>Order ID:</strong> ${escapeHtml(order.orderId)}</p>
     <p><strong>Status:</strong> ${escapeHtml(order.status || "pending")}</p>
@@ -81,22 +83,28 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Invalid order data" });
   }
 
-  const messages = [
-    {
-      sender: { name: SENDER_NAME, email: SENDER_EMAIL },
-      to: [{ email: ADMIN_EMAIL, name: "Khat" }],
-      subject: `New Khat order ${order.orderId}`,
-      htmlContent: createEmailHtml(order, "admin"),
-    },
-    {
-      sender: { name: SENDER_NAME, email: SENDER_EMAIL },
-      to: [
-        { email: customerEmail, name: order.customerInfo.name || "Customer" },
-      ],
-      subject: `Your Khat order ${order.orderId}`,
-      htmlContent: createEmailHtml(order, "customer"),
-    },
-  ];
+  const customerMessage = {
+    sender: { name: SENDER_NAME, email: SENDER_EMAIL },
+    to: [{ email: customerEmail, name: order.customerInfo.name || "Customer" }],
+    subject:
+      order.notificationType === "shipped"
+        ? `Your order has been shipped - ${order.orderId}`
+        : `Your Khat Order ${order.orderId}`,
+    htmlContent: createEmailHtml(order, "customer"),
+  };
+
+  const messages =
+    order.notificationType === "shipped"
+      ? [customerMessage]
+      : [
+          {
+            sender: { name: SENDER_NAME, email: SENDER_EMAIL },
+            to: [{ email: ADMIN_EMAIL, name: "Khat" }],
+            subject: `New Order ${order.orderId}`,
+            htmlContent: createEmailHtml(order, "admin"),
+          },
+          customerMessage,
+        ];
 
   try {
     await Promise.all(

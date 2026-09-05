@@ -1,38 +1,64 @@
-import { useEffect, useState } from 'react'
-import { orderService } from '../../services/orderService'
-import { ORDER_STATUS } from '../../utils/constants'
-import { formatDate, formatDateTime } from '../../utils/dateUtils'
-import '../styles/pages.css'
+import { useEffect, useState } from "react";
+import { orderService } from "../../services/orderService";
+import { ORDER_STATUS } from "../../utils/constants";
+import { formatDate, formatDateTime } from "../../utils/dateUtils";
+import "../styles/pages.css";
 
 function AdminOrders() {
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [selectedOrder, setSelectedOrder] = useState(null)
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
-    loadOrders()
-  }, [])
+    loadOrders();
+  }, []);
 
   const loadOrders = async () => {
     try {
-      setLoading(true)
-      const data = await orderService.getAllOrders()
-      setOrders(data)
+      setLoading(true);
+      const data = await orderService.getAllOrders();
+      setOrders(data);
     } catch (error) {
-      console.error('Failed to load orders:', error)
+      console.error("Failed to load orders:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await orderService.updateOrderStatus(orderId, newStatus)
-      loadOrders()
+      const order = orders.find((item) => item.id === orderId);
+      const shouldSendShippedEmail =
+        newStatus === "shipped" && order?.status !== "shipped";
+
+      await orderService.updateOrderStatus(orderId, newStatus);
+
+      if (shouldSendShippedEmail && order) {
+        const emailResponse = await fetch("/api/send-order-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...order,
+            orderId,
+            status: "shipped",
+            notificationType: "shipped",
+          }),
+        });
+
+        if (!emailResponse.ok) {
+          const details = await emailResponse.text();
+          console.error(
+            "Order was marked shipped, but the shipment email failed:",
+            details,
+          );
+        }
+      }
+
+      loadOrders();
     } catch (error) {
-      console.error('Failed to update order:', error)
+      console.error("Failed to update order:", error);
     }
-  }
+  };
 
   return (
     <div className="admin-orders">
@@ -55,19 +81,26 @@ function AdminOrders() {
             </tr>
           </thead>
           <tbody>
-            {orders.map(order => (
+            {orders.map((order) => (
               <tr key={order.id}>
                 <td>{order.id}</td>
-                <td>{order.customerInfo?.name || order.customerName || order.customerEmail?.split('@')[0] || 'N/A'}</td>
+                <td>
+                  {order.customerInfo?.name ||
+                    order.customerName ||
+                    order.customerEmail?.split("@")[0] ||
+                    "N/A"}
+                </td>
                 <td>{formatDate(order.createdAt)}</td>
                 <td>{order.totalAmount || order.total} LE</td>
                 <td>
                   <select
                     value={order.status}
-                    onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                    onChange={(e) =>
+                      handleStatusChange(order.id, e.target.value)
+                    }
                     className={`status-select ${order.status}`}
                   >
-                    {Object.values(ORDER_STATUS).map(status => (
+                    {Object.values(ORDER_STATUS).map((status) => (
                       <option key={status} value={status}>
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                       </option>
@@ -76,10 +109,14 @@ function AdminOrders() {
                 </td>
                 <td>
                   <button
-                    onClick={() => setSelectedOrder(selectedOrder?.id === order.id ? null : order)}
+                    onClick={() =>
+                      setSelectedOrder(
+                        selectedOrder?.id === order.id ? null : order,
+                      )
+                    }
                     className="btn-secondary"
                   >
-                    {selectedOrder?.id === order.id ? 'Hide' : 'View'} Details
+                    {selectedOrder?.id === order.id ? "Hide" : "View"} Details
                   </button>
                 </td>
               </tr>
@@ -93,25 +130,62 @@ function AdminOrders() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Order Details</h3>
-              <button className="modal-close" onClick={() => setSelectedOrder(null)}>×</button>
+              <button
+                className="modal-close"
+                onClick={() => setSelectedOrder(null)}
+              >
+                ×
+              </button>
             </div>
             <div className="modal-body">
-              <p><strong>Order ID:</strong> {selectedOrder.id}</p>
-              <p><strong>Customer Name:</strong> {selectedOrder.customerInfo?.name || selectedOrder.customerName || selectedOrder.customerEmail?.split('@')[0] || 'N/A'}</p>
-              <p><strong>Customer Email:</strong> <a href={`mailto:${selectedOrder.customerInfo?.email || selectedOrder.customerEmail}`}>{selectedOrder.customerInfo?.email || selectedOrder.customerEmail}</a></p>
+              <p>
+                <strong>Order ID:</strong> {selectedOrder.id}
+              </p>
+              <p>
+                <strong>Customer Name:</strong>{" "}
+                {selectedOrder.customerInfo?.name ||
+                  selectedOrder.customerName ||
+                  selectedOrder.customerEmail?.split("@")[0] ||
+                  "N/A"}
+              </p>
+              <p>
+                <strong>Customer Email:</strong>{" "}
+                <a
+                  href={`mailto:${selectedOrder.customerInfo?.email || selectedOrder.customerEmail}`}
+                >
+                  {selectedOrder.customerInfo?.email ||
+                    selectedOrder.customerEmail}
+                </a>
+              </p>
               {selectedOrder.customerInfo?.phone && (
-                <p><strong>Phone Number:</strong> <a href={`tel:${selectedOrder.customerInfo?.phone}`}>{selectedOrder.customerInfo?.phone}</a></p>
+                <p>
+                  <strong>Phone Number:</strong>{" "}
+                  <a href={`tel:${selectedOrder.customerInfo?.phone}`}>
+                    {selectedOrder.customerInfo?.phone}
+                  </a>
+                </p>
               )}
-              <p><strong>Total:</strong> {selectedOrder.totalAmount || selectedOrder.total} LE</p>
-              <p><strong>Status:</strong> <span className={`status ${selectedOrder.status}`}>{selectedOrder.status}</span></p>
-              <p><strong>Date:</strong> {formatDateTime(selectedOrder.createdAt)}</p>
+              <p>
+                <strong>Total:</strong>{" "}
+                {selectedOrder.totalAmount || selectedOrder.total} LE
+              </p>
+              <p>
+                <strong>Status:</strong>{" "}
+                <span className={`status ${selectedOrder.status}`}>
+                  {selectedOrder.status}
+                </span>
+              </p>
+              <p>
+                <strong>Date:</strong> {formatDateTime(selectedOrder.createdAt)}
+              </p>
 
               <h4>Items:</h4>
               {selectedOrder.items && selectedOrder.items.length > 0 ? (
                 <ul>
                   {selectedOrder.items.map((item, idx) => (
                     <li key={idx}>
-                      {item.name} x {item.quantity} = {(item.price * item.quantity).toFixed(2)} LE
+                      {item.name} x {item.quantity} ={" "}
+                      {(item.price * item.quantity).toFixed(2)} LE
                     </li>
                   ))}
                 </ul>
@@ -120,15 +194,13 @@ function AdminOrders() {
               )}
 
               <h4>Delivery Address:</h4>
-              <p>
-                {selectedOrder.customerInfo?.address}
-              </p>
+              <p>{selectedOrder.customerInfo?.address}</p>
             </div>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default AdminOrders
+export default AdminOrders;
