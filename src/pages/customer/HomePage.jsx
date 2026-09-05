@@ -1,28 +1,30 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useProducts } from '../../context/ProductContext'
-import { useCart } from '../../context/CartContext'
-import { getAvailableStock } from '../../utils/inventoryUtils'
-import { CATEGORIES } from '../../utils/constants'
-import CustomRequestForm from '../../components/CustomRequestForm'
-import '../styles/pages.css'
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useProducts } from "../../context/ProductContext";
+import { useCart } from "../../context/CartContext";
+import { getAvailableStock } from "../../utils/inventoryUtils";
+import { CATEGORIES } from "../../utils/constants";
+import CustomRequestForm from "../../components/CustomRequestForm";
+import WishlistButton from "../../components/WishlistButton";
+import "../styles/pages.css";
 
 function ImageCarousel({ images, imageUrl, productName }) {
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Handle both old imageUrl and new images array
-  const displayImages = images && images.length > 0 ? images : (imageUrl ? [imageUrl] : [null])
-  const hasMultipleImages = displayImages.length > 1
+  const displayImages =
+    images && images.length > 0 ? images : imageUrl ? [imageUrl] : [null];
+  const hasMultipleImages = displayImages.length > 1;
 
   useEffect(() => {
-    if (!hasMultipleImages) return
+    if (!hasMultipleImages) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % displayImages.length)
-    }, 3000)
+      setCurrentIndex((prev) => (prev + 1) % displayImages.length);
+    }, 3000);
 
-    return () => clearInterval(interval)
-  }, [displayImages.length, hasMultipleImages])
+    return () => clearInterval(interval);
+  }, [displayImages.length, hasMultipleImages]);
 
   return (
     <div className="image-carousel">
@@ -37,36 +39,48 @@ function ImageCarousel({ images, imageUrl, productName }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function ProductCardActions({ product, addToCart, cartItems }) {
-  const [quantity, setQuantity] = useState(1)
-  const availableStock = getAvailableStock(product, cartItems)
+  const [quantity, setQuantity] = useState(1);
+  const availableStock = getAvailableStock(product, cartItems);
 
   const handleAddToCart = () => {
-    addToCart(product, quantity)
-    setQuantity(1)
-  }
+    addToCart(product, quantity);
+    setQuantity(1);
+  };
 
   const handleIncrement = () => {
     if (quantity < availableStock) {
-      setQuantity(quantity + 1)
+      setQuantity(quantity + 1);
     }
-  }
+  };
 
   const handleDecrement = () => {
     if (quantity > 1) {
-      setQuantity(quantity - 1)
+      setQuantity(quantity - 1);
     }
-  }
+  };
 
   return (
     <div className="card-actions">
       <div className="quantity-control">
-        <button onClick={handleDecrement} className="qty-btn" disabled={quantity === 1}>−</button>
+        <button
+          onClick={handleDecrement}
+          className="qty-btn"
+          disabled={quantity === 1}
+        >
+          −
+        </button>
         <span className="qty-value">{quantity}</span>
-        <button onClick={handleIncrement} className="qty-btn" disabled={quantity === availableStock}>+</button>
+        <button
+          onClick={handleIncrement}
+          className="qty-btn"
+          disabled={quantity === availableStock}
+        >
+          +
+        </button>
       </div>
       <button
         onClick={handleAddToCart}
@@ -76,27 +90,29 @@ function ProductCardActions({ product, addToCart, cartItems }) {
         Add to Cart
       </button>
     </div>
-  )
+  );
 }
 
 function HomePage() {
-  const { products, loading, error } = useProducts()
-  const { addToCart, cartItems } = useCart()
-  const navigate = useNavigate()
-  const searchParams = new URLSearchParams(window.location.search)
-  const searchQuery = searchParams.get('search') || ''
-  const [selectedCategory, setSelectedCategory] = useState(null)
+  const { products, loading, error } = useProducts();
+  const { addToCart, cartItems } = useCart();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(window.location.search);
+  const searchQuery = searchParams.get("search") || "";
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = !searchQuery ||
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch =
+      !searchQuery ||
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchQuery.toLowerCase())
+      product.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = !selectedCategory || product.category === selectedCategory
+    const matchesCategory =
+      !selectedCategory || product.category === selectedCategory;
 
-    return matchesSearch && matchesCategory
-  })
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="home-page">
@@ -110,7 +126,11 @@ function HomePage() {
       <section className="shop-section">
         <div className="container">
           <div className="section-header-with-button">
-            <h2>{searchQuery ? `Search Results for "${searchQuery}"` : 'Featured Products'}</h2>
+            <h2>
+              {searchQuery
+                ? `Search Results for "${searchQuery}"`
+                : "Featured Products"}
+            </h2>
             {searchQuery && (
               <Link to="/" className="btn-back-to-all">
                 Return to All Products
@@ -120,21 +140,21 @@ function HomePage() {
 
           <div className="category-filters">
             <button
-              className={`category-btn ${!selectedCategory ? 'active' : ''}`}
+              className={`category-btn ${!selectedCategory ? "active" : ""}`}
               onClick={() => {
-                setSelectedCategory(null)
-                window.history.replaceState({}, '', '/')
+                setSelectedCategory(null);
+                window.history.replaceState({}, "", "/");
               }}
             >
               All Products
             </button>
-            {CATEGORIES.map(category => (
+            {CATEGORIES.map((category) => (
               <button
                 key={category}
-                className={`category-btn ${selectedCategory === category ? 'active' : ''}`}
+                className={`category-btn ${selectedCategory === category ? "active" : ""}`}
                 onClick={() => {
-                  setSelectedCategory(category)
-                  window.history.replaceState({}, '', '/')
+                  setSelectedCategory(category);
+                  window.history.replaceState({}, "", "/");
                 }}
               >
                 {category}
@@ -142,20 +162,26 @@ function HomePage() {
             ))}
           </div>
 
-          {selectedCategory === 'Custom' && <CustomRequestForm />}
+          {selectedCategory === "Custom" && <CustomRequestForm />}
 
           {loading && <div className="loading">Loading products...</div>}
           {error && <div className="error">{error}</div>}
-          {!loading && !error && selectedCategory !== 'Custom' && (
+          {!loading && !error && selectedCategory !== "Custom" && (
             <>
               {filteredProducts.length === 0 ? (
                 <div className="empty-state">
-                  <p>{searchQuery ? 'No products found matching your search.' : selectedCategory ? `No products found in ${selectedCategory}.` : 'No products available yet.'}</p>
+                  <p>
+                    {searchQuery
+                      ? "No products found matching your search."
+                      : selectedCategory
+                        ? `No products found in ${selectedCategory}.`
+                        : "No products available yet."}
+                  </p>
                   <p>Check back soon!</p>
                 </div>
               ) : (
                 <div className="grid grid-3">
-                  {filteredProducts.map(product => (
+                  {filteredProducts.map((product) => (
                     <div key={product.id} className="product-card">
                       <Link to={`/product/${product.id}`} className="card-link">
                         <div className="product-image-container">
@@ -172,11 +198,18 @@ function HomePage() {
                           {getAvailableStock(product, cartItems) === 0 ? (
                             <p className="stock out-stock">Out of Stock</p>
                           ) : getAvailableStock(product, cartItems) <= 5 ? (
-                            <p className="stock low-stock">Only {getAvailableStock(product, cartItems)} left</p>
+                            <p className="stock low-stock">
+                              Only {getAvailableStock(product, cartItems)} left
+                            </p>
                           ) : null}
                         </div>
                       </Link>
-                      <ProductCardActions product={product} addToCart={addToCart} cartItems={cartItems} />
+                      <WishlistButton product={product} />
+                      <ProductCardActions
+                        product={product}
+                        addToCart={addToCart}
+                        cartItems={cartItems}
+                      />
                     </div>
                   ))}
                 </div>
@@ -186,7 +219,7 @@ function HomePage() {
         </div>
       </section>
     </div>
-  )
+  );
 }
 
-export default HomePage
+export default HomePage;

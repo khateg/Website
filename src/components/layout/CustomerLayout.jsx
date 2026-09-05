@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../../services/firebase";
 import { signOut } from "firebase/auth";
 import { FiShoppingCart } from "react-icons/fi";
+import { FiHeart } from "react-icons/fi";
 import { MdShoppingCart } from "react-icons/md";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { BiSearch } from "react-icons/bi";
@@ -10,6 +11,7 @@ import { FiMail } from "react-icons/fi";
 import { FiPhone } from "react-icons/fi";
 import { FaInstagram, FaTiktok } from "react-icons/fa6";
 import { useCart } from "../../context/CartContext";
+import { useWishlist } from "../../context/WishlistContext";
 import logo from "../../assets/logo.png";
 import "../styles/layout.css";
 
@@ -17,6 +19,7 @@ function CustomerLayout({ children }) {
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { cartItems, clearCart } = useCart();
+  const { wishlistItems } = useWishlist();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,7 +66,12 @@ function CustomerLayout({ children }) {
 
           <ul className="nav-links">
             <li className="cart-options">
-              <Link to="/cart" className="cart-link-feather">
+              <Link
+                to="/cart"
+                className="cart-link-feather"
+                aria-label="Cart"
+                title="Cart"
+              >
                 <div className="cart-icon-container">
                   <FiShoppingCart size={20} />
                   {cartItems.length > 0 && (
@@ -75,11 +83,27 @@ function CustomerLayout({ children }) {
                     </span>
                   )}
                 </div>
-                <span className="cart-text">Cart</span>
               </Link>
             </li>
             {user ? (
               <>
+                <li>
+                  <Link
+                    to="/wishlist"
+                    className="wishlist-nav-link"
+                    aria-label="Wishlist"
+                    title="Wishlist"
+                  >
+                    <div className="cart-icon-container">
+                      <FiHeart size={18} />
+                      {wishlistItems.length > 0 && (
+                        <span className="wishlist-badge">
+                          {wishlistItems.length}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                </li>
                 <li>
                   <Link to="/dashboard">Dashboard</Link>
                 </li>
