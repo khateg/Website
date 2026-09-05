@@ -1,4 +1,4 @@
-@import '../../styles/variables.css';
+@import "../../styles/variables.css";
 
 /* Customer Layout */
 .customer-layout {
@@ -210,6 +210,11 @@
   color: #8b6a47;
 }
 
+.footer-icon-link svg {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
 .footer-right {
   text-align: left;
   display: flex;
@@ -237,6 +242,16 @@
 
 .footer-right a:hover {
   color: #8b6a47;
+}
+
+.footer-social-links {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.footer-social-links .footer-icon-link {
+  text-decoration: none;
 }
 
 .footer-center {

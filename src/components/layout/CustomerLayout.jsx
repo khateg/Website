@@ -1,41 +1,44 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { auth } from '../../services/firebase'
-import { signOut } from 'firebase/auth'
-import { FiShoppingCart } from 'react-icons/fi'
-import { MdShoppingCart } from 'react-icons/md'
-import { AiOutlineShoppingCart } from 'react-icons/ai'
-import { BiSearch } from 'react-icons/bi'
-import { useCart } from '../../context/CartContext'
-import logo from '../../assets/logo.png'
-import '../styles/layout.css'
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { auth } from "../../services/firebase";
+import { signOut } from "firebase/auth";
+import { FiShoppingCart } from "react-icons/fi";
+import { MdShoppingCart } from "react-icons/md";
+import { AiOutlineShoppingCart } from "react-icons/ai";
+import { BiSearch } from "react-icons/bi";
+import { FiMail } from "react-icons/fi";
+import { FiPhone } from "react-icons/fi";
+import { FaInstagram, FaTiktok } from "react-icons/fa6";
+import { useCart } from "../../context/CartContext";
+import logo from "../../assets/logo.png";
+import "../styles/layout.css";
 
 function CustomerLayout({ children }) {
-  const [user, setUser] = useState(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const { cartItems, clearCart } = useCart()
-  const navigate = useNavigate()
+  const [user, setUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { cartItems, clearCart } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-      setUser(currentUser)
-    })
-    return unsubscribe
-  }, [])
+      setUser(currentUser);
+    });
+    return unsubscribe;
+  }, []);
 
   const handleLogout = async () => {
-    await signOut(auth)
-    clearCart()
-    navigate('/')
-  }
+    await signOut(auth);
+    clearCart();
+    navigate("/");
+  };
 
   const handleSearch = (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/?search=${encodeURIComponent(searchQuery)}`)
-      setSearchQuery('')
+      navigate(`/?search=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
     }
-  }
+  };
 
   return (
     <div className="customer-layout">
@@ -65,7 +68,10 @@ function CustomerLayout({ children }) {
                   <FiShoppingCart size={20} />
                   {cartItems.length > 0 && (
                     <span className="cart-badge">
-                      {cartItems.reduce((total, item) => total + (item.quantity || 1), 0)}
+                      {cartItems.reduce(
+                        (total, item) => total + (item.quantity || 1),
+                        0,
+                      )}
                     </span>
                   )}
                 </div>
@@ -74,31 +80,60 @@ function CustomerLayout({ children }) {
             </li>
             {user ? (
               <>
-                <li><Link to="/dashboard">Dashboard</Link></li>
-                <li><button onClick={handleLogout} className="logout-btn">Logout</button></li>
+                <li>
+                  <Link to="/dashboard">Dashboard</Link>
+                </li>
+                <li>
+                  <button onClick={handleLogout} className="logout-btn">
+                    Logout
+                  </button>
+                </li>
               </>
             ) : (
-              <li><Link to="/login">Login</Link></li>
+              <li>
+                <Link to="/login">Login</Link>
+              </li>
             )}
           </ul>
         </div>
       </nav>
 
-      <main className="main-content">
-        {children}
-      </main>
+      <main className="main-content">{children}</main>
 
       <footer className="footer">
         <div className="footer-top">
           <div className="footer-left">
             <h4>Contact Us</h4>
-            <a href="mailto:khat.eg111@gmail.com">khat.eg111@gmail.com</a>
-            {/* <a href="tel:+201001234567">+201001234567</a> */}
+            <a href="mailto:khat.eg111@gmail.com" className="footer-icon-link">
+              <FiMail aria-hidden="true" />
+              <span>khat.eg111@gmail.com</span>
+            </a>
+            {/* <a href="tel:+201001234567" className="footer-icon-link"><FiPhone aria-hidden="true" /><span>+201001234567</span></a> */}
           </div>
           <div className="footer-right">
             <h4>Follow Us</h4>
-            <a href="https://www.instagram.com/khat.eg1" target="_blank" rel="noopener noreferrer">Instagram</a>
-            <a href="https://www.tiktok.com/@khat.eg1" target="_blank" rel="noopener noreferrer">TikTok</a>
+            <div className="footer-social-links">
+              <a
+                href="https://www.instagram.com/khat.eg1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="footer-icon-link"
+                aria-label="Instagram"
+                title="Instagram"
+              >
+                <FaInstagram aria-hidden="true" />
+              </a>
+              <a
+                href="https://www.tiktok.com/@khat.eg1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="footer-icon-link"
+                aria-label="TikTok"
+                title="TikTok"
+              >
+                <FaTiktok aria-hidden="true" />
+              </a>
+            </div>
           </div>
         </div>
         <div className="footer-center">
@@ -106,7 +141,7 @@ function CustomerLayout({ children }) {
         </div>
       </footer>
     </div>
-  )
+  );
 }
 
-export default CustomerLayout
+export default CustomerLayout;
