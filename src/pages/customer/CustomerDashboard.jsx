@@ -1,162 +1,162 @@
-import { useEffect, useState } from 'react'
-import { auth, db } from '../../services/firebase'
-import { ref, get, set } from 'firebase/database'
-import { orderService } from '../../services/orderService'
-import { customRequestService } from '../../services/customRequestService'
-import { useCart } from '../../context/CartContext'
-import { formatDate, formatDateTime } from '../../utils/dateUtils'
-import '../styles/pages.css'
+import { useEffect, useState } from "react";
+import { auth, db } from "../../services/firebase";
+import { ref, get, set } from "firebase/database";
+import { orderService } from "../../services/orderService";
+import { customRequestService } from "../../services/customRequestService";
+import { useCart } from "../../context/CartContext";
+import { formatDate, formatDateTime } from "../../utils/dateUtils";
+import "../styles/pages.css";
 
 function CustomerDashboard() {
-  const { addToCart } = useCart()
-  const [orders, setOrders] = useState([])
-  const [customRequests, setCustomRequests] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState(null)
+  const { addToCart } = useCart();
+  const [orders, setOrders] = useState([]);
+  const [customRequests, setCustomRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const [profileData, setProfileData] = useState({
-    name: '',
-    phone: '',
-    address: ''
-  })
-  const [isEditing, setIsEditing] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveError, setError] = useState('')
-  const [saveSuccess, setSaveSuccess] = useState('')
-  const [selectedOrder, setSelectedOrder] = useState(null)
-  const [selectedCustomRequest, setSelectedCustomRequest] = useState(null)
-  const [addedToCart, setAddedToCart] = useState({})
-  const [cartMessage, setCartMessage] = useState('')
+    name: "",
+    phone: "",
+    address: "",
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setError] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedCustomRequest, setSelectedCustomRequest] = useState(null);
+  const [addedToCart, setAddedToCart] = useState({});
+  const [cartMessage, setCartMessage] = useState("");
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       if (currentUser) {
-        setUser(currentUser)
-        loadUserProfile(currentUser.uid)
-        loadOrders(currentUser.uid)
-        loadCustomRequests(currentUser.email)
+        setUser(currentUser);
+        loadUserProfile(currentUser.uid);
+        loadOrders(currentUser.uid);
+        loadCustomRequests(currentUser.email);
       } else {
-        setLoading(false)
+        setLoading(false);
       }
-    })
+    });
 
-    return unsubscribe
-  }, [])
+    return unsubscribe;
+  }, []);
 
   const loadUserProfile = async (userId) => {
     try {
-      const userRef = ref(db, `users/${userId}`)
-      const snapshot = await get(userRef)
+      const userRef = ref(db, `users/${userId}`);
+      const snapshot = await get(userRef);
 
       if (snapshot.exists()) {
-        const data = snapshot.val()
+        const data = snapshot.val();
         setProfileData({
-          name: data.name || '',
-          phone: data.phone || '',
-          address: data.address || ''
-        })
+          name: data.name || "",
+          phone: data.phone || "",
+          address: data.address || "",
+        });
       }
     } catch (error) {
-      console.error('Failed to load profile:', error)
+      console.error("Failed to load profile:", error);
     }
-  }
+  };
 
   const loadOrders = async (userId) => {
     try {
-      setLoading(true)
-      const data = await orderService.getUserOrders(userId)
-      setOrders(data)
+      setLoading(true);
+      const data = await orderService.getUserOrders(userId);
+      setOrders(data);
     } catch (error) {
-      console.error('Failed to load orders:', error)
+      console.error("Failed to load orders:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const loadCustomRequests = async (email) => {
     try {
-      const data = await customRequestService.getCustomRequestsByEmail(email)
-      setCustomRequests(data)
+      const data = await customRequestService.getCustomRequestsByEmail(email);
+      setCustomRequests(data);
     } catch (error) {
-      console.error('Failed to load custom requests:', error)
+      console.error("Failed to load custom requests:", error);
     }
-  }
+  };
 
   const handleProfileChange = (e) => {
-    const { name, value } = e.target
-    setProfileData(prev => ({
+    const { name, value } = e.target;
+    setProfileData((prev) => ({
       ...prev,
-      [name]: value
-    }))
-  }
+      [name]: value,
+    }));
+  };
 
   const handleSaveProfile = async (e) => {
-    e.preventDefault()
-    setError('')
-    setSaveSuccess('')
-    setIsSaving(true)
+    e.preventDefault();
+    setError("");
+    setSaveSuccess("");
+    setIsSaving(true);
 
     try {
-      const userRef = ref(db, `users/${user.uid}`)
+      const userRef = ref(db, `users/${user.uid}`);
 
       const userData = {
         name: profileData.name,
         phone: profileData.phone,
         address: profileData.address,
         email: user.email,
-        updatedAt: new Date().toISOString()
-      }
+        updatedAt: new Date().toISOString(),
+      };
 
       // Try to get existing user
-      const snapshot = await get(userRef)
+      const snapshot = await get(userRef);
 
       if (!snapshot.exists()) {
         // Create new user
-        userData.createdAt = new Date().toISOString()
+        userData.createdAt = new Date().toISOString();
       }
 
       // Save/update user
-      await set(userRef, userData)
+      await set(userRef, userData);
 
-      setSaveSuccess('Profile saved successfully!')
-      setIsEditing(false)
-      setTimeout(() => setSaveSuccess(''), 3000)
+      setSaveSuccess("Profile saved successfully!");
+      setIsEditing(false);
+      setTimeout(() => setSaveSuccess(""), 3000);
     } catch (error) {
-      console.error('Error saving profile:', error)
-      setError(`Failed to save profile: ${error.message}`)
+      console.error("Error saving profile:", error);
+      setError(`Failed to save profile: ${error.message}`);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const getDisplayName = () => {
-    if (profileData.name) return profileData.name
-    return user.email.split('@')[0]
-  }
+    if (profileData.name) return profileData.name;
+    return user.email.split("@")[0];
+  };
 
   const handleAddCustomToCart = (request) => {
     const customProduct = {
       id: `custom-${request.id}`,
       name: `Custom Order - ${new Date(request.createdAt).toLocaleDateString()}`,
       price: request.price || 0,
-      category: 'Custom',
-      description: request.description || 'Custom order',
+      category: "Custom",
+      description: request.description || "Custom order",
       customRequest: {
         id: request.id,
         description: request.description,
         textToAdd: request.textToAdd,
         colors: request.colors,
         image: request.image,
-      }
-    }
+      },
+    };
 
-    addToCart(customProduct, 1)
-    setAddedToCart(prev => ({ ...prev, [request.id]: true }))
-    setCartMessage('Custom request added to cart!')
+    addToCart(customProduct, 1);
+    setAddedToCart((prev) => ({ ...prev, [request.id]: true }));
+    setCartMessage("Custom request added to cart!");
 
     setTimeout(() => {
-      setCartMessage('')
-    }, 3000)
-  }
+      setCartMessage("");
+    }, 3000);
+  };
 
   return (
     <div className="customer-dashboard">
@@ -174,7 +174,7 @@ function CustomerDashboard() {
                 className="btn-secondary"
                 onClick={() => setIsEditing(!isEditing)}
               >
-                {isEditing ? 'Cancel' : 'Edit Profile'}
+                {isEditing ? "Cancel" : "Edit Profile"}
               </button>
             </div>
 
@@ -224,16 +224,23 @@ function CustomerDashboard() {
                   className="btn-primary"
                   disabled={isSaving}
                 >
-                  {isSaving ? 'Saving...' : 'Save Changes'}
+                  {isSaving ? "Saving..." : "Save Changes"}
                 </button>
               </form>
             )}
 
             {!isEditing && (
               <div className="profile-display">
-                <p><strong>Name:</strong> {profileData.name || 'Not provided'}</p>
-                <p><strong>Phone:</strong> {profileData.phone || 'Not provided'}</p>
-                <p><strong>Address:</strong> {profileData.address || 'Not provided'}</p>
+                <p>
+                  <strong>Name:</strong> {profileData.name || "Not provided"}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {profileData.phone || "Not provided"}
+                </p>
+                <p>
+                  <strong>Address:</strong>{" "}
+                  {profileData.address || "Not provided"}
+                </p>
               </div>
             )}
           </div>
@@ -247,34 +254,50 @@ function CustomerDashboard() {
           ) : orders.length === 0 ? (
             <p>You haven't placed any orders yet.</p>
           ) : (
-            <table className="orders-table">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Date</th>
-                  <th>Total</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map(order => (
-                  <tr key={order.id}>
-                    <td>{order.id}</td>
-                    <td>{formatDate(order.createdAt)}</td>
-                    <td>{order.totalAmount} LE</td>
-                    <td><span className={`status ${order.status}`}>{order.status}</span></td>
-                    <td><button
-                      className="btn-secondary"
-                      onClick={() => setSelectedOrder(selectedOrder?.id === order.id ? null : order)}
-                      style={{ padding: '0.5rem 0.8rem', fontSize: '0.9rem' }}
-                    >
-                      {selectedOrder?.id === order.id ? 'Hide' : 'View'} Details
-                    </button></td>
+            <div className="orders-table-wrapper">
+              <table className="orders-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order.id}>
+                      <td>{order.id}</td>
+                      <td>{formatDate(order.createdAt)}</td>
+                      <td>{order.totalAmount} LE</td>
+                      <td>
+                        <span className={`status ${order.status}`}>
+                          {order.status}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className="btn-secondary"
+                          onClick={() =>
+                            setSelectedOrder(
+                              selectedOrder?.id === order.id ? null : order,
+                            )
+                          }
+                          style={{
+                            padding: "0.5rem 0.8rem",
+                            fontSize: "0.9rem",
+                          }}
+                        >
+                          {selectedOrder?.id === order.id ? "Hide" : "View"}{" "}
+                          Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 
@@ -282,7 +305,7 @@ function CustomerDashboard() {
           <h2>My Custom Requests</h2>
 
           {cartMessage && (
-            <div className="success" style={{ marginBottom: '1rem' }}>
+            <div className="success" style={{ marginBottom: "1rem" }}>
               {cartMessage}
             </div>
           )}
@@ -291,41 +314,57 @@ function CustomerDashboard() {
             <p>You haven't submitted any custom requests yet.</p>
           ) : (
             <div className="custom-requests-list">
-              {customRequests.map(request => (
+              {customRequests.map((request) => (
                 <div key={request.id} className="custom-request-item">
                   <div className="request-summary">
                     <div className="request-info">
-                      <p className="request-date">Submitted on {formatDate(request.createdAt)}</p>
-                      <span className={`status-badge status-${request.status}`}>{request.status}</span>
-                      {request.status === 'approved' && request.price && (
+                      <p className="request-date">
+                        Submitted on {formatDate(request.createdAt)}
+                      </p>
+                      <span className={`status-badge status-${request.status}`}>
+                        {request.status}
+                      </span>
+                      {request.status === "approved" && request.price && (
                         <span className="price-badge">{request.price} LE</span>
                       )}
                     </div>
                     <div className="request-actions">
-                      {request.status === 'approved' && !addedToCart[request.id] && (
-                        <button
-                          className="btn-add-custom-to-cart"
-                          onClick={() => handleAddCustomToCart(request)}
-                        >
-                          Add to Cart
-                        </button>
-                      )}
+                      {request.status === "approved" &&
+                        !addedToCart[request.id] && (
+                          <button
+                            className="btn-add-custom-to-cart"
+                            onClick={() => handleAddCustomToCart(request)}
+                          >
+                            Add to Cart
+                          </button>
+                        )}
                       {addedToCart[request.id] && (
-                        <span className="added-to-cart-text">✓ Added to Cart</span>
+                        <span className="added-to-cart-text">
+                          ✓ Added to Cart
+                        </span>
                       )}
                       <button
                         className="btn-secondary"
-                        onClick={() => setSelectedCustomRequest(selectedCustomRequest?.id === request.id ? null : request)}
-                        style={{ padding: '0.5rem 0.8rem', fontSize: '0.9rem' }}
+                        onClick={() =>
+                          setSelectedCustomRequest(
+                            selectedCustomRequest?.id === request.id
+                              ? null
+                              : request,
+                          )
+                        }
+                        style={{ padding: "0.5rem 0.8rem", fontSize: "0.9rem" }}
                       >
-                        {selectedCustomRequest?.id === request.id ? 'Hide' : 'View'} Details
+                        {selectedCustomRequest?.id === request.id
+                          ? "Hide"
+                          : "View"}{" "}
+                        Details
                       </button>
                     </div>
                   </div>
 
                   {selectedCustomRequest?.id === request.id && (
                     <div className="request-details-expanded">
-                      {request.status === 'approved' && request.price && (
+                      {request.status === "approved" && request.price && (
                         <div className="detail-item price-highlight">
                           <strong>Price:</strong>
                           <p className="price-value">{request.price} LE</p>
@@ -353,7 +392,11 @@ function CustomerDashboard() {
                       {request.image && (
                         <div className="detail-item">
                           <strong>Uploaded Image:</strong>
-                          <img src={request.image} alt="Custom request" className="custom-request-image" />
+                          <img
+                            src={request.image}
+                            alt="Custom request"
+                            className="custom-request-image"
+                          />
                         </div>
                       )}
                     </div>
@@ -369,20 +412,38 @@ function CustomerDashboard() {
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>Order Details</h3>
-                <button className="modal-close" onClick={() => setSelectedOrder(null)}>×</button>
+                <button
+                  className="modal-close"
+                  onClick={() => setSelectedOrder(null)}
+                >
+                  ×
+                </button>
               </div>
               <div className="modal-body">
-                <p><strong>Order ID:</strong> {selectedOrder.id}</p>
-                <p><strong>Date:</strong> {formatDateTime(selectedOrder.createdAt)}</p>
-                <p><strong>Status:</strong> <span className={`status ${selectedOrder.status}`}>{selectedOrder.status}</span></p>
-                <p><strong>Total:</strong> {selectedOrder.totalAmount} LE</p>
+                <p>
+                  <strong>Order ID:</strong> {selectedOrder.id}
+                </p>
+                <p>
+                  <strong>Date:</strong>{" "}
+                  {formatDateTime(selectedOrder.createdAt)}
+                </p>
+                <p>
+                  <strong>Status:</strong>{" "}
+                  <span className={`status ${selectedOrder.status}`}>
+                    {selectedOrder.status}
+                  </span>
+                </p>
+                <p>
+                  <strong>Total:</strong> {selectedOrder.totalAmount} LE
+                </p>
 
                 <h4>Items:</h4>
                 {selectedOrder.items && selectedOrder.items.length > 0 ? (
                   <ul>
                     {selectedOrder.items.map((item, idx) => (
                       <li key={idx}>
-                        {item.name} x {item.quantity} = {(item.price * item.quantity).toFixed(2)} LE
+                        {item.name} x {item.quantity} ={" "}
+                        {(item.price * item.quantity).toFixed(2)} LE
                       </li>
                     ))}
                   </ul>
@@ -391,16 +452,14 @@ function CustomerDashboard() {
                 )}
 
                 <h4>Delivery Address:</h4>
-                <p>
-                  {selectedOrder.customerInfo?.address}
-                </p>
+                <p>{selectedOrder.customerInfo?.address}</p>
               </div>
             </div>
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default CustomerDashboard
+export default CustomerDashboard;

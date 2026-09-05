@@ -18,6 +18,7 @@ import "../styles/layout.css";
 function CustomerLayout({ children }) {
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const { cartItems, clearCart } = useCart();
   const { wishlistItems } = useWishlist();
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ function CustomerLayout({ children }) {
     if (searchQuery.trim()) {
       navigate(`/?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery("");
+      setIsMobileSearchOpen(false);
     }
   };
 
@@ -47,11 +49,24 @@ function CustomerLayout({ children }) {
     <div className="customer-layout">
       <nav className="navbar">
         <div className="nav-container">
+          <button
+            type="button"
+            className="mobile-search-toggle"
+            onClick={() => setIsMobileSearchOpen((isOpen) => !isOpen)}
+            aria-label="Search products"
+            title="Search products"
+          >
+            <BiSearch size={22} />
+          </button>
+
           <Link to="/" className="logo">
             <img src={logo} alt="Khat Logo" className="logo-img" />
           </Link>
 
-          <form className="search-form" onSubmit={handleSearch}>
+          <form
+            className={`search-form ${isMobileSearchOpen ? "is-open" : ""}`}
+            onSubmit={handleSearch}
+          >
             <input
               type="text"
               placeholder="Search products..."
