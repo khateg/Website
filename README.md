@@ -68,7 +68,13 @@ cp .env.example .env.local
    - Go to [Cloudinary Dashboard](https://cloudinary.com/console)
    - Add your cloud name and upload preset to `.env.local`
 
-5. **Start development server**
+5. **Configure Brevo order emails**
+  - In Brevo, verify `khat.eg111@gmail.com` as a sender with the display name `Khat`.
+  - Create a Brevo API key and add it to the Vercel project as `BREVO_API_KEY`.
+  - Add `BREVO_SENDER_EMAIL=khat.eg111@gmail.com`, `BREVO_SENDER_NAME=Khat`, and `ORDER_NOTIFICATION_EMAIL=khat.eg111@gmail.com` to Vercel.
+  - Redeploy after saving the variables. Never add `BREVO_API_KEY` to a `VITE_` variable or commit it.
+
+6. **Start development server**
 ```bash
 npm run dev
 ```
