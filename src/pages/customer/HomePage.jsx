@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useProducts } from "../../context/ProductContext";
 import { useCart } from "../../context/CartContext";
 import { getAvailableStock } from "../../utils/inventoryUtils";
-import { CATEGORIES } from "../../utils/constants";
+import { CATEGORIES, STYLES } from "../../utils/constants";
 import CustomRequestForm from "../../components/CustomRequestForm";
 import WishlistButton from "../../components/WishlistButton";
 import "../styles/pages.css";
@@ -100,18 +100,23 @@ function HomePage() {
   const searchParams = new URLSearchParams(window.location.search);
   const searchQuery = searchParams.get("search") || "";
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedStyle, setSelectedStyle] = useState(null);
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
       !searchQuery ||
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchQuery.toLowerCase());
+      product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.style?.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesCategory =
       !selectedCategory || product.category === selectedCategory;
+    const matchesStyle =
+      Boolean(product.style) &&
+      (!selectedStyle || product.style === selectedStyle);
 
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesCategory && matchesStyle;
   });
 
   return (
@@ -138,28 +143,52 @@ function HomePage() {
             )}
           </div>
 
-          <div className="category-filters">
-            <button
-              className={`category-btn ${!selectedCategory ? "active" : ""}`}
-              onClick={() => {
-                setSelectedCategory(null);
-                window.history.replaceState({}, "", "/");
-              }}
-            >
-              All Products
-            </button>
-            {CATEGORIES.map((category) => (
+          <div className="category-filter-group">
+            <h3 className="filter-label">Categories</h3>
+            <div className="category-filters">
               <button
-                key={category}
-                className={`category-btn ${selectedCategory === category ? "active" : ""}`}
+                className={`category-btn ${!selectedCategory ? "active" : ""}`}
                 onClick={() => {
-                  setSelectedCategory(category);
+                  setSelectedCategory(null);
                   window.history.replaceState({}, "", "/");
                 }}
               >
-                {category}
+                All Products
               </button>
-            ))}
+              {CATEGORIES.map((category) => (
+                <button
+                  key={category}
+                  className={`category-btn ${selectedCategory === category ? "active" : ""}`}
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    window.history.replaceState({}, "", "/");
+                  }}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="style-filter-group">
+            <h3 className="filter-label">Styles</h3>
+            <div className="category-filters style-filters">
+              <button
+                className={`category-btn ${!selectedStyle ? "active" : ""}`}
+                onClick={() => setSelectedStyle(null)}
+              >
+                All Styles
+              </button>
+              {STYLES.map((style) => (
+                <button
+                  key={style}
+                  className={`category-btn ${selectedStyle === style ? "active" : ""}`}
+                  onClick={() => setSelectedStyle(style)}
+                >
+                  {style}
+                </button>
+              ))}
+            </div>
           </div>
 
           {selectedCategory === "Custom" && <CustomRequestForm />}
@@ -193,7 +222,10 @@ function HomePage() {
                         </div>
                         <div className="card-content">
                           <h3>{product.name}</h3>
-                          <p className="category">{product.category}</p>
+                          <p className="category card-category">
+                            {product.category}
+                            {product.style && ` · ${product.style}`}
+                          </p>
                           <p className="price">{product.price} LE</p>
                           {getAvailableStock(product, cartItems) === 0 ? (
                             <p className="stock out-stock">Out of Stock</p>

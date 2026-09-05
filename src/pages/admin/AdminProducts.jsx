@@ -1,126 +1,130 @@
-import { useEffect, useState } from 'react'
-import { Routes, Route } from 'react-router-dom'
-import { productService } from '../../services/productService'
-import { cloudinaryService } from '../../services/cloudinaryService'
-import '../styles/pages.css'
+import { useEffect, useState } from "react";
+import { Routes, Route } from "react-router-dom";
+import { productService } from "../../services/productService";
+import { cloudinaryService } from "../../services/cloudinaryService";
+import { STYLES } from "../../utils/constants";
+import "../styles/pages.css";
 
 function AdminProducts() {
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
-  const [error, setError] = useState(null)
-  const [uploading, setUploading] = useState(false)
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [error, setError] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    oldPrice: '',
-    category: '',
-    stock: '',
+    name: "",
+    description: "",
+    price: "",
+    oldPrice: "",
+    category: "",
+    style: "",
+    stock: "",
     images: [],
-  })
+  });
 
   useEffect(() => {
-    console.log('AdminProducts mounted')
-    loadProducts()
-  }, [])
+    console.log("AdminProducts mounted");
+    loadProducts();
+  }, []);
 
   const loadProducts = async () => {
     try {
-      setLoading(true)
-      console.log('Loading products...')
-      const data = await productService.getAllProducts()
-      console.log('Products loaded:', data)
-      setProducts(data)
-      setError(null)
+      setLoading(true);
+      console.log("Loading products...");
+      const data = await productService.getAllProducts();
+      console.log("Products loaded:", data);
+      setProducts(data);
+      setError(null);
     } catch (err) {
-      console.error('Failed to load products:', err)
-      setError(err.message)
+      console.error("Failed to load products:", err);
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
       if (editingId) {
-        await productService.updateProduct(editingId, formData)
+        await productService.updateProduct(editingId, formData);
       } else {
-        await productService.addProduct(formData)
+        await productService.addProduct(formData);
       }
-      loadProducts()
-      resetForm()
-      setShowForm(false)
-      setError(null)
+      loadProducts();
+      resetForm();
+      setShowForm(false);
+      setError(null);
     } catch (error) {
-      console.error('Failed to save product:', error)
-      setError('Failed to save product: ' + error.message)
+      console.error("Failed to save product:", error);
+      setError("Failed to save product: " + error.message);
     }
-  }
+  };
 
   const handleDelete = async (id) => {
-    if (confirm('Are you sure?')) {
+    if (confirm("Are you sure?")) {
       try {
-        await productService.deleteProduct(id)
-        loadProducts()
+        await productService.deleteProduct(id);
+        loadProducts();
       } catch (error) {
-        console.error('Failed to delete product:', error)
+        console.error("Failed to delete product:", error);
       }
     }
-  }
+  };
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      description: '',
-      price: '',
-      oldPrice: '',
-      category: '',
-      stock: '',
+      name: "",
+      description: "",
+      price: "",
+      oldPrice: "",
+      category: "",
+      style: "",
+      stock: "",
       images: [],
-    })
-    setEditingId(null)
-  }
+    });
+    setEditingId(null);
+  };
 
   const handleEdit = (product) => {
     setFormData({
       name: product.name,
       description: product.description,
       price: product.price,
-      oldPrice: product.oldPrice || '',
+      oldPrice: product.oldPrice || "",
       category: product.category,
+      style: product.style || "",
       stock: product.stock,
       images: product.images || [],
-    })
-    setEditingId(product.id)
-    setShowForm(true)
-  }
+    });
+    setEditingId(product.id);
+    setShowForm(true);
+  };
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    setUploading(true)
+    setUploading(true);
     try {
-      const imageUrl = await cloudinaryService.uploadImage(file)
-      setFormData({ ...formData, images: [...formData.images, imageUrl] })
-      setError(null)
+      const imageUrl = await cloudinaryService.uploadImage(file);
+      setFormData({ ...formData, images: [...formData.images, imageUrl] });
+      setError(null);
     } catch (err) {
-      setError('Failed to upload image. Please try again.')
-      console.error('Upload error:', err)
+      setError("Failed to upload image. Please try again.");
+      console.error("Upload error:", err);
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
+  };
 
   const handleRemoveImage = (index) => {
     setFormData({
       ...formData,
       images: formData.images.filter((_, i) => i !== index),
-    })
-  }
+    });
+  };
 
   return (
     <div className="admin-products">
@@ -129,11 +133,11 @@ function AdminProducts() {
         <button
           className="btn-primary"
           onClick={() => {
-            resetForm()
-            setShowForm(!showForm)
+            resetForm();
+            setShowForm(!showForm);
           }}
         >
-          {showForm ? 'Cancel' : '+ Add Product'}
+          {showForm ? "Cancel" : "+ Add Product"}
         </button>
       </div>
 
@@ -147,7 +151,9 @@ function AdminProducts() {
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 required
               />
             </div>
@@ -156,7 +162,9 @@ function AdminProducts() {
               <label>Category *</label>
               <select
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
                 required
               >
                 <option value="">Select a category</option>
@@ -167,12 +175,35 @@ function AdminProducts() {
             </div>
 
             <div className="form-group">
+              <label>Style *</label>
+              <select
+                value={formData.style}
+                onChange={(e) =>
+                  setFormData({ ...formData, style: e.target.value })
+                }
+                required
+              >
+                <option value="">Select a style</option>
+                {STYLES.map((style) => (
+                  <option key={style} value={style}>
+                    {style}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
               <label>Price *</label>
               <input
                 type="number"
                 step="0.01"
                 value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    price: parseFloat(e.target.value),
+                  })
+                }
                 required
               />
             </div>
@@ -183,7 +214,12 @@ function AdminProducts() {
                 type="number"
                 step="0.01"
                 value={formData.oldPrice}
-                onChange={(e) => setFormData({ ...formData, oldPrice: e.target.value ? parseFloat(e.target.value) : '' })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    oldPrice: e.target.value ? parseFloat(e.target.value) : "",
+                  })
+                }
               />
             </div>
 
@@ -192,7 +228,9 @@ function AdminProducts() {
               <input
                 type="number"
                 value={formData.stock}
-                onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({ ...formData, stock: parseInt(e.target.value) })
+                }
                 required
               />
             </div>
@@ -201,7 +239,9 @@ function AdminProducts() {
               <label>Description</label>
               <textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
               />
             </div>
 
@@ -214,15 +254,17 @@ function AdminProducts() {
                   onChange={handleImageUpload}
                   disabled={uploading}
                   id="product-image"
-                  style={{ display: 'none' }}
+                  style={{ display: "none" }}
                 />
                 <button
                   type="button"
-                  onClick={() => document.getElementById('product-image').click()}
+                  onClick={() =>
+                    document.getElementById("product-image").click()
+                  }
                   disabled={uploading}
                   className="btn-secondary"
                 >
-                  {uploading ? 'Uploading...' : '+ Add Image'}
+                  {uploading ? "Uploading..." : "+ Add Image"}
                 </button>
                 {formData.images.length > 0 && (
                   <div className="images-gallery">
@@ -245,7 +287,7 @@ function AdminProducts() {
           </div>
 
           <button type="submit" className="btn-success" disabled={uploading}>
-            {editingId ? 'Update Product' : 'Add Product'}
+            {editingId ? "Update Product" : "Add Product"}
           </button>
         </form>
       )}
@@ -262,16 +304,18 @@ function AdminProducts() {
             <tr>
               <th>Name</th>
               <th>Category</th>
+              <th>Style</th>
               <th>Price (LE)</th>
               <th>Stock</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {products.map(product => (
+            {products.map((product) => (
               <tr key={product.id}>
                 <td>{product.name}</td>
                 <td>{product.category}</td>
+                <td>{product.style || "Not assigned"}</td>
                 <td>{product.price}</td>
                 <td>{product.stock}</td>
                 <td>
@@ -294,7 +338,7 @@ function AdminProducts() {
         </table>
       )}
     </div>
-  )
+  );
 }
 
-export default AdminProducts
+export default AdminProducts;

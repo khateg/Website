@@ -389,6 +389,10 @@
   margin-bottom: 1rem;
 }
 
+.card-category {
+  white-space: nowrap;
+}
+
 .price {
   font-size: 1.5rem;
   font-weight: bold;
@@ -1489,6 +1493,15 @@
   align-items: center;
 }
 
+.style-filter-group {
+  margin-top: -1rem;
+}
+
+.filter-label {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
 .category-btn {
   padding: 0.7rem 1.5rem;
   border: 2px solid var(--color-primary);
@@ -2348,6 +2361,19 @@
 
   .hero-content p {
     font-size: 1.1rem;
+  }
+
+  .category-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-right: -1rem;
+    padding-right: 1rem;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+  }
+
+  .category-btn {
+    flex: 0 0 auto;
   }
 
   /* Product Detail Page Mobile */
