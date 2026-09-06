@@ -119,17 +119,17 @@ function CustomerLayout({ children }) {
                     </div>
                   </Link>
                 </li>
-                <li>
+                <li className="dashboard-nav-item">
                   <Link to="/dashboard">Dashboard</Link>
                 </li>
-                <li>
+                <li className="logout-nav-item">
                   <button onClick={handleLogout} className="logout-btn">
                     Logout
                   </button>
                 </li>
               </>
             ) : (
-              <li>
+              <li className="login-nav-item">
                 <Link to="/login">Login</Link>
               </li>
             )}

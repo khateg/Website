@@ -33,7 +33,7 @@ function AdminLayout({ children }) {
         </div>
 
         <nav className="sidebar-nav">
-          <Link to="/admin/" className="nav-item">
+          <Link to="/admin" className="nav-item">
             <span className="nav-icon">📊</span>
             <span className="nav-text">Dashboard</span>
           </Link>

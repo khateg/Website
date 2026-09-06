@@ -17,16 +17,17 @@ export const ORDER_STATUS = {
 };
 
 // Product Categories
-export const CATEGORIES = ["Notebooks", "Wall Arts", "Stickers", "Custom"];
+export const CATEGORIES = ["Custom", "Notebooks", "Wall Arts", "Stickers"];
 
 // Product Styles
 export const STYLES = [
-  "Schools",
-  "Cars",
   "Anime",
-  "Football",
-  "Simple",
+  "Cars",
   "Girly",
+  "Football",
+  "Studying",
+  "Simple",
+  "Religious"
 ];
 
 // Admin Email
