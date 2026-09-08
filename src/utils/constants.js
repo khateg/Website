@@ -27,7 +27,7 @@ export const STYLES = [
   "Football",
   "Studying",
   "Simple",
-  "Religious"
+  "Islamic",
 ];
 
 // Admin Email

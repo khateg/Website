@@ -81,6 +81,18 @@ npm run dev
 
 Visit `http://localhost:5173`
 
+### Financials Google Sheet setup
+
+The admin Financials page reads the `Orders` and `Expenses` tabs through the `/api/financials` serverless function. Share the spreadsheet with the Google service account email and add these server-side Vercel variables:
+
+- `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+- `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` (keep the `\\n` line breaks when entering it)
+- `GOOGLE_SHEETS_SPREADSHEET_ID`
+- `GOOGLE_SHEETS_ORDERS_RANGE` (optional, defaults to `Orders!A:Z`)
+- `GOOGLE_SHEETS_EXPENSES_RANGE` (optional, defaults to `Expenses!A:Z`)
+
+The first row of each sheet must contain headers. Orders should include an amount/total column, and expenses should use columns in this order for new entries: `Date`, `Category`, `Description`, `Amount`.
+
 ## 🏗️ Architecture
 
 ### Customer Side

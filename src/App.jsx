@@ -27,6 +27,7 @@ import WishlistPage from "./pages/customer/WishlistPage";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCustomRequests from "./pages/admin/AdminCustomRequests";
+import AdminFinancials from "./pages/admin/AdminFinancials";
 
 // Layout
 import CustomerLayout from "./components/layout/CustomerLayout";
@@ -108,6 +109,10 @@ function App() {
                         <Route path="/orders" element={<AdminDashboard />} />
                         <Route path="/customers" element={<AdminDashboard />} />
                         <Route path="/inventory" element={<AdminDashboard />} />
+                        <Route
+                          path="/financials"
+                          element={<AdminFinancials />}
+                        />
                         <Route
                           path="/custom-requests"
                           element={<AdminCustomRequests />}

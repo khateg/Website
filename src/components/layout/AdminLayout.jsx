@@ -1,33 +1,33 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { auth } from '../../services/firebase'
-import { signOut } from 'firebase/auth'
-import '../styles/admin-layout.css'
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { auth } from "../../services/firebase";
+import { signOut } from "firebase/auth";
+import "../styles/admin-layout.css";
 
 function AdminLayout({ children }) {
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
-  const [sidebarOpen, setSidebarOpen] = useState(!isMobile)
-  const navigate = useNavigate()
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth <= 768
-      setIsMobile(mobile)
-      setSidebarOpen(!mobile)
-    }
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      setSidebarOpen(!mobile);
+    };
 
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleLogout = async () => {
-    await signOut(auth)
-    navigate('/')
-  }
+    await signOut(auth);
+    navigate("/");
+  };
 
   return (
     <div className="admin-layout">
-      <aside className={`admin-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+      <aside className={`admin-sidebar ${sidebarOpen ? "open" : "closed"}`}>
         <div className="sidebar-header">
           <h2>KHAT Admin</h2>
         </div>
@@ -53,6 +53,10 @@ function AdminLayout({ children }) {
             <span className="nav-icon">📈</span>
             <span className="nav-text">Inventory</span>
           </Link>
+          <Link to="/admin/financials" className="nav-item">
+            <span className="nav-icon">💰</span>
+            <span className="nav-text">Financials</span>
+          </Link>
           <Link to="/admin/custom-requests" className="nav-item">
             <span className="nav-icon">✨</span>
             <span className="nav-text">Custom Requests</span>
@@ -66,7 +70,10 @@ function AdminLayout({ children }) {
 
       <div className="admin-main">
         <header className="admin-header">
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="menu-toggle">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="menu-toggle"
+          >
             ☰
           </button>
           <h1>Admin Dashboard</h1>
@@ -78,12 +85,10 @@ function AdminLayout({ children }) {
           )}
         </header>
 
-        <main className="admin-content">
-          {children}
-        </main>
+        <main className="admin-content">{children}</main>
       </div>
     </div>
-  )
+  );
 }
 
-export default AdminLayout
+export default AdminLayout;
