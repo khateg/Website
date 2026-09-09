@@ -1,25 +1,26 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useCart } from '../../context/CartContext'
-import '../styles/pages.css'
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
+import "../styles/pages.css";
 
 function CartPage() {
-  const { cartItems, removeFromCart, updateQuantity, getTotalPrice } = useCart()
-  const [limitReached, setLimitReached] = useState(null)
+  const { cartItems, removeFromCart, updateQuantity, getTotalPrice } =
+    useCart();
+  const [limitReached, setLimitReached] = useState(null);
 
   const handleQuantityChange = (item, newQuantity) => {
     if (newQuantity > (item.stock || 999)) {
-      setLimitReached(item.id)
-      setTimeout(() => setLimitReached(null), 3000)
+      setLimitReached(item.id);
+      setTimeout(() => setLimitReached(null), 3000);
     } else {
-      setLimitReached(null)
+      setLimitReached(null);
     }
-    updateQuantity(item.id, newQuantity)
-  }
+    updateQuantity(item.cartKey, newQuantity);
+  };
 
-  const handleRemove = (productId) => {
-    removeFromCart(productId)
-  }
+  const handleRemove = (item) => {
+    removeFromCart(item.cartKey);
+  };
 
   return (
     <div className="cart-page">
@@ -47,7 +48,7 @@ function CartPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {cartItems.map(item => (
+                  {cartItems.map((item) => (
                     <tr key={item.id}>
                       <td className="product-name">
                         <div>
@@ -66,14 +67,18 @@ function CartPage() {
                           min="1"
                           max={item.stock || 999}
                           value={item.quantity}
-                          onChange={(e) => handleQuantityChange(item, parseInt(e.target.value))}
+                          onChange={(e) =>
+                            handleQuantityChange(item, parseInt(e.target.value))
+                          }
                         />
                       </td>
-                      <td className="product-total">{(item.price * item.quantity).toFixed(2)}</td>
+                      <td className="product-total">
+                        {(item.price * item.quantity).toFixed(2)}
+                      </td>
                       <td className="product-action">
                         <button
                           className="btn-remove"
-                          onClick={() => handleRemove(item.id)}
+                          onClick={() => handleRemove(item)}
                         >
                           Remove
                         </button>
@@ -83,13 +88,13 @@ function CartPage() {
                 </tbody>
               </table>
               <div className="cart-items-mobile">
-                {cartItems.map(item => (
+                {cartItems.map((item) => (
                   <div key={item.id} className="cart-item-card">
                     <div className="card-header">
                       <h3 className="card-title">{item.name}</h3>
                       <button
                         className="btn-remove-mobile"
-                        onClick={() => handleRemove(item.id)}
+                        onClick={() => handleRemove(item)}
                       >
                         ✕
                       </button>
@@ -110,13 +115,17 @@ function CartPage() {
                         min="1"
                         max={item.stock || 999}
                         value={item.quantity}
-                        onChange={(e) => handleQuantityChange(item, parseInt(e.target.value))}
+                        onChange={(e) =>
+                          handleQuantityChange(item, parseInt(e.target.value))
+                        }
                         className="quantity-input-mobile"
                       />
                     </div>
                     <div className="card-row total">
                       <span className="label">Total:</span>
-                      <span className="value">{(item.price * item.quantity).toFixed(2)} LE</span>
+                      <span className="value">
+                        {(item.price * item.quantity).toFixed(2)} LE
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -140,7 +149,11 @@ function CartPage() {
               <Link to="/checkout" className="btn-primary full-width">
                 Proceed to Checkout
               </Link>
-              <Link to="/" className="btn-secondary full-width" style={{ marginTop: '0.5rem' }}>
+              <Link
+                to="/"
+                className="btn-secondary full-width"
+                style={{ marginTop: "0.5rem" }}
+              >
                 Continue Shopping
               </Link>
             </div>
@@ -148,7 +161,7 @@ function CartPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default CartPage
+export default CartPage;

@@ -49,13 +49,20 @@ export function CartProvider({ children }) {
     });
   };
 
-  const removeFromCart = (productId, selectedOptions = null) => {
+  const removeFromCart = (productIdOrCartKey, selectedOptions = null) => {
     setCartItems((prevItems) => {
-      if (!selectedOptions) {
-        return prevItems.filter((item) => item.id !== productId);
+      if (
+        typeof productIdOrCartKey === "string" &&
+        productIdOrCartKey.includes("::")
+      ) {
+        return prevItems.filter((item) => item.cartKey !== productIdOrCartKey);
       }
 
-      const cartKey = `${productId}::${buildCombinationKey(selectedOptions.product || {}, selectedOptions)}`;
+      if (!selectedOptions) {
+        return prevItems.filter((item) => item.id !== productIdOrCartKey);
+      }
+
+      const cartKey = `${productIdOrCartKey}::${buildCombinationKey(selectedOptions.product || {}, selectedOptions)}`;
       return prevItems.filter((item) => item.cartKey !== cartKey);
     });
   };
