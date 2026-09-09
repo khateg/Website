@@ -3,7 +3,71 @@ import { Routes, Route } from "react-router-dom";
 import { productService } from "../../services/productService";
 import { cloudinaryService } from "../../services/cloudinaryService";
 import { STYLES } from "../../utils/constants";
+import {
+  PRODUCT_OPTION_CATALOG,
+  getDefaultOptionsForCategory,
+} from "../../utils/inventoryUtils";
 import "../styles/pages.css";
+
+const renderOptionPriceRows = (
+  category,
+  options = {},
+  updateOptionPrice,
+  updateOptionOldPrice,
+) => {
+  if (!category || !options || Object.keys(options).length === 0) {
+    return null;
+  }
+
+  return Object.entries(options).map(([optionKey, valueMap]) => {
+    const shouldShowOldPrice =
+      optionKey !== "size" &&
+      optionKey !== "coverType" &&
+      optionKey !== "pageType";
+
+    return (
+      <div className="form-group full-width" key={optionKey}>
+        <label>{optionKey}</label>
+        <div className="option-price-grid">
+          {Object.entries(valueMap).map(([value, details]) => (
+            <div className="option-price-row" key={value}>
+              <span className="option-value-name">{value}</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={Number(details?.price || 0)}
+                onChange={(e) =>
+                  updateOptionPrice(
+                    optionKey,
+                    value,
+                    Number(e.target.value || 0),
+                  )
+                }
+              />
+              {shouldShowOldPrice && (
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={Number(details?.oldPrice || 0)}
+                  onChange={(e) =>
+                    updateOptionOldPrice(
+                      optionKey,
+                      value,
+                      Number(e.target.value || 0),
+                    )
+                  }
+                  placeholder="old"
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  });
+};
 
 function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -16,11 +80,11 @@ function AdminProducts() {
     name: "",
     description: "",
     price: "",
-    oldPrice: "",
     category: "",
     style: "",
-    stock: "",
     images: [],
+    options: PRODUCT_OPTION_CATALOG.Notebooks.options,
+    defaults: PRODUCT_OPTION_CATALOG.Notebooks.defaults,
   });
 
   useEffect(() => {
@@ -78,11 +142,11 @@ function AdminProducts() {
       name: "",
       description: "",
       price: "",
-      oldPrice: "",
       category: "",
       style: "",
-      stock: "",
       images: [],
+      options: PRODUCT_OPTION_CATALOG.Notebooks.options,
+      defaults: PRODUCT_OPTION_CATALOG.Notebooks.defaults,
     });
     setEditingId(null);
   };
@@ -91,15 +155,70 @@ function AdminProducts() {
     setFormData({
       name: product.name,
       description: product.description,
-      price: product.price,
-      oldPrice: product.oldPrice || "",
+      price: product.price || getOptionSum(product),
       category: product.category,
       style: product.style || "",
-      stock: product.stock,
       images: product.images || [],
+      options:
+        product.options ||
+        PRODUCT_OPTION_CATALOG[product.category]?.options ||
+        {},
+      defaults:
+        product.defaults ||
+        getDefaultOptionsForCategory(product.category) ||
+        {},
     });
     setEditingId(product.id);
     setShowForm(true);
+  };
+
+  const getOptionSum = (product) => {
+    if (!product || !product.options) return 0;
+    return Object.values(product.options).reduce((sum, values) => {
+      return (
+        sum +
+        Object.values(values).reduce(
+          (s, item) => s + Number(item.price || 0),
+          0,
+        )
+      );
+    }, 0);
+  };
+
+  const updateOptionPrice = (optionKey, optionValue, price) => {
+    const nextOptions = {
+      ...formData.options,
+      [optionKey]: {
+        ...(formData.options?.[optionKey] || {}),
+        [optionValue]: {
+          ...(formData.options?.[optionKey]?.[optionValue] || {}),
+          price,
+        },
+      },
+    };
+
+    setFormData({
+      ...formData,
+      options: nextOptions,
+    });
+  };
+
+  const updateOptionOldPrice = (optionKey, optionValue, oldPrice) => {
+    const nextOptions = {
+      ...formData.options,
+      [optionKey]: {
+        ...(formData.options?.[optionKey] || {}),
+        [optionValue]: {
+          ...(formData.options?.[optionKey]?.[optionValue] || {}),
+          oldPrice,
+        },
+      },
+    };
+
+    setFormData({
+      ...formData,
+      options: nextOptions,
+    });
   };
 
   const handleImageUpload = async (e) => {
@@ -162,9 +281,16 @@ function AdminProducts() {
               <label>Category *</label>
               <select
                 value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
+                onChange={(e) => {
+                  const category = e.target.value;
+                  const catalog = PRODUCT_OPTION_CATALOG[category];
+                  setFormData({
+                    ...formData,
+                    category,
+                    options: catalog?.options || {},
+                    defaults: catalog?.defaults || {},
+                  });
+                }}
                 required
               >
                 <option value="">Select a category</option>
@@ -192,48 +318,19 @@ function AdminProducts() {
               </select>
             </div>
 
-            <div className="form-group">
-              <label>Price *</label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    price: parseFloat(e.target.value),
-                  })
-                }
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Old Price (Optional)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.oldPrice}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    oldPrice: e.target.value ? parseFloat(e.target.value) : "",
-                  })
-                }
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Stock Quantity *</label>
-              <input
-                type="number"
-                value={formData.stock}
-                onChange={(e) =>
-                  setFormData({ ...formData, stock: parseInt(e.target.value) })
-                }
-                required
-              />
-            </div>
+            {formData.category && (
+              <>
+                <div className="form-group full-width">
+                  <label>Option Prices & Old Prices</label>
+                  {renderOptionPriceRows(
+                    formData.category,
+                    formData.options,
+                    updateOptionPrice,
+                    updateOptionOldPrice,
+                  )}
+                </div>
+              </>
+            )}
 
             <div className="form-group full-width">
               <label>Description</label>

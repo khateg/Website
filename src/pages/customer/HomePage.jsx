@@ -2,7 +2,10 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useProducts } from "../../context/ProductContext";
 import { useCart } from "../../context/CartContext";
-import { getAvailableStock } from "../../utils/inventoryUtils";
+import {
+  getProductOptionPrice,
+  getProductOptionValueDisplay,
+} from "../../utils/inventoryUtils";
 import { CATEGORIES, STYLES } from "../../utils/constants";
 import CustomRequestForm from "../../components/CustomRequestForm";
 import WishlistButton from "../../components/WishlistButton";
@@ -44,23 +47,19 @@ function ImageCarousel({ images, imageUrl, productName }) {
 
 function ProductCardActions({ product, addToCart, cartItems }) {
   const [quantity, setQuantity] = useState(1);
-  const availableStock = getAvailableStock(product, cartItems);
+  const defaultOptions = product.defaults || {};
 
   const handleAddToCart = () => {
-    addToCart(product, quantity);
+    addToCart(product, quantity, defaultOptions);
     setQuantity(1);
   };
 
   const handleIncrement = () => {
-    if (quantity < availableStock) {
-      setQuantity(quantity + 1);
-    }
+    setQuantity((current) => current + 1);
   };
 
   const handleDecrement = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
-    }
+    setQuantity((current) => Math.max(1, current - 1));
   };
 
   return (
@@ -74,19 +73,11 @@ function ProductCardActions({ product, addToCart, cartItems }) {
           −
         </button>
         <span className="qty-value">{quantity}</span>
-        <button
-          onClick={handleIncrement}
-          className="qty-btn"
-          disabled={quantity === availableStock}
-        >
+        <button onClick={handleIncrement} className="qty-btn">
           +
         </button>
       </div>
-      <button
-        onClick={handleAddToCart}
-        disabled={availableStock === 0}
-        className="btn-add-to-cart"
-      >
+      <button onClick={handleAddToCart} className="btn-add-to-cart">
         Add to Cart
       </button>
     </div>
@@ -226,14 +217,19 @@ function HomePage() {
                             {product.category}
                             {product.style && ` · ${product.style}`}
                           </p>
-                          <p className="price">{product.price} LE</p>
-                          {getAvailableStock(product, cartItems) === 0 ? (
-                            <p className="stock out-stock">Out of Stock</p>
-                          ) : getAvailableStock(product, cartItems) <= 5 ? (
-                            <p className="stock low-stock">
-                              Only {getAvailableStock(product, cartItems)} left
-                            </p>
-                          ) : null}
+                          <p className="variant-preview">
+                            {getProductOptionValueDisplay(
+                              product,
+                              product.defaults || {},
+                            )}
+                          </p>
+                          <p className="price">
+                            {getProductOptionPrice(
+                              product,
+                              product.defaults || {},
+                            )}{" "}
+                            LE
+                          </p>
                         </div>
                       </Link>
                       <WishlistButton product={product} />

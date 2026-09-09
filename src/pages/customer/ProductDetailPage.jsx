@@ -3,7 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { productService } from "../../services/productService";
 import { useCart } from "../../context/CartContext";
 import { useProducts } from "../../context/ProductContext";
-import { getAvailableStock } from "../../utils/inventoryUtils";
+import {
+  getProductOptionPrice,
+  getProductOptionOldPrice,
+} from "../../utils/inventoryUtils";
 import WishlistButton from "../../components/WishlistButton";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import "../styles/pages.css";
@@ -14,11 +17,18 @@ function ProductDetailPage() {
   const { addToCart, cartItems } = useCart();
   const [product, setProduct] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedOptions, setSelectedOptions] = useState({});
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const availableStock = product ? getAvailableStock(product, cartItems) : 0;
+  const selectedPrice = product
+    ? getProductOptionPrice(product, selectedOptions)
+    : 0;
+  const selectedOldPrice = product
+    ? getProductOptionOldPrice(product, selectedOptions)
+    : 0;
+  const availableStock = 999;
 
   useEffect(() => {
     loadProduct();
@@ -32,6 +42,7 @@ function ProductDetailPage() {
         setError("Product not found");
       } else {
         setProduct(data);
+        setSelectedOptions(data.defaults || {});
         setSelectedImageIndex(0);
       }
     } catch (err) {
@@ -43,8 +54,15 @@ function ProductDetailPage() {
   };
 
   const handleAddToCart = () => {
-    addToCart(product, quantity);
+    addToCart(product, quantity, selectedOptions);
     setQuantity(1);
+  };
+
+  const updateSelectedOption = (key, value) => {
+    setSelectedOptions((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
   };
 
   if (loading) return <div className="loading">Loading...</div>;
@@ -69,6 +87,51 @@ function ProductDetailPage() {
     setSelectedImageIndex((currentIndex) =>
       currentIndex === productImages.length - 1 ? 0 : currentIndex + 1,
     );
+  };
+
+  const getOrderedOptionKeys = () => {
+    if (!product?.options) return [];
+
+    if (product.category === "Notebooks") {
+      return ["size", "coverType", "pageType"].filter(
+        (key) => product.options[key],
+      );
+    }
+
+    return Object.keys(product.options);
+  };
+
+  const getOrderedOptionValues = (key, values) => {
+    const defaultValue = product?.defaults?.[key];
+    const ordered = [];
+
+    if (defaultValue && values[defaultValue]) {
+      ordered.push(defaultValue);
+    }
+
+    Object.keys(values).forEach((value) => {
+      if (value !== defaultValue) {
+        ordered.push(value);
+      }
+    });
+
+    return ordered;
+  };
+
+  const displayOptionName = (key) => {
+    if (key === "coverType") return "Cover";
+    if (key === "pageType") return "Page";
+    if (key === "size") return "Size";
+    return key
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replace(/^./, (letter) => letter.toUpperCase());
+  };
+
+  const displayOptionValue = (value) => {
+    if (!value) return value;
+    return value
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replace(/^./, (letter) => letter.toUpperCase());
   };
 
   return (
@@ -131,52 +194,78 @@ function ProductDetailPage() {
             </div>
             <p className="category">{product.category}</p>
             <p className="description">{product.description}</p>
+
+            {product.options && Object.keys(product.options).length > 0 && (
+              <div className="variant-picker">
+                {getOrderedOptionKeys().map((key) => {
+                  const values = product.options[key];
+
+                  return (
+                    <div className="variant-option" key={key}>
+                      <label>{displayOptionName(key)}</label>
+                      <div className="variant-button-group">
+                        {getOrderedOptionValues(key, values).map((value) => {
+                          const selectedValue =
+                            selectedOptions[key] ||
+                            product.defaults?.[key] ||
+                            Object.keys(values)[0];
+                          const isSelected = selectedValue === value;
+
+                          return (
+                            <button
+                              type="button"
+                              key={value}
+                              className={`variant-button ${isSelected ? "active" : ""}`}
+                              onClick={() => updateSelectedOption(key, value)}
+                            >
+                              <span>{displayOptionValue(value)}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="product-meta">
             <div className="price-section">
-              {product.oldPrice && (
-                <div className="old-price">
-                  <s>{product.oldPrice} LE</s>
-                </div>
-              )}
-              <div className="price">{product.price} LE</div>
-            </div>
-            {availableStock === 0 ? (
-              <div className="stock out-stock">Out of Stock</div>
-            ) : availableStock <= 5 ? (
-              <div className="stock low-stock">Only {availableStock} left</div>
-            ) : null}
-          </div>
-
-          {availableStock > 0 && (
-            <div className="product-purchase-controls">
-              <div className="card-actions">
-                <div className="quantity-control">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="qty-btn"
-                    disabled={quantity === 1}
-                  >
-                    −
-                  </button>
-                  <span className="qty-value">{quantity}</span>
-                  <button
-                    onClick={() =>
-                      setQuantity(Math.min(availableStock, quantity + 1))
-                    }
-                    className="qty-btn"
-                    disabled={quantity === availableStock}
-                  >
-                    +
-                  </button>
-                </div>
-                <button className="btn-add-to-cart" onClick={handleAddToCart}>
-                  Add to Cart
-                </button>
+              <div className="price-box">
+                <div className="price">{selectedPrice} LE</div>
+                {selectedOldPrice > 0 && (
+                  <div className="old-price">
+                    <s>{selectedOldPrice} LE</s>
+                  </div>
+                )}
               </div>
             </div>
-          )}
+          </div>
+
+          <div className="product-purchase-controls">
+            <div className="card-actions">
+              <div className="quantity-control">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="qty-btn"
+                  disabled={quantity === 1}
+                >
+                  −
+                </button>
+                <span className="qty-value">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="qty-btn"
+                >
+                  +
+                </button>
+              </div>
+              <button className="btn-add-to-cart" onClick={handleAddToCart}>
+                Add to Cart
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

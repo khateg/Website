@@ -94,6 +94,101 @@
   position: relative;
 }
 
+.admin-products .option-price-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-products .option-price-row,
+.admin-products .combination-stock-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.admin-products .option-price-row input,
+.admin-products .combination-stock-row input {
+  width: 110px;
+}
+
+.admin-products .option-value-name,
+.admin-products .combination-key {
+  font-size: 14px;
+  color: var(--text-color, #333);
+}
+
+.admin-products .combination-stock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.product-detail-page .variant-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.product-detail-page .variant-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.product-detail-page .variant-option label {
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.product-detail-page .variant-button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.product-detail-page .variant-button {
+  background: white;
+  color: var(--color-primary);
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.75rem;
+  min-width: 100px;
+  cursor: pointer;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.product-detail-page .variant-button span {
+  display: block;
+  font-weight: 700;
+}
+
+.product-detail-page .variant-button small {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--color-gray-dark);
+}
+
+.product-detail-page .variant-button.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.product-detail-page .variant-button.active small {
+  color: white;
+}
+
 .wishlist-button {
   background: white;
   color: var(--color-gray-dark);
@@ -235,6 +330,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+.home-page .card-link:hover {
+  color: inherit;
 }
 
 .product-image-container {
@@ -587,12 +686,26 @@
 .price-section {
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
+}
+
+.price-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  border: none;
+  box-shadow: none;
 }
 
 .old-price {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   color: var(--color-gray-dark);
   margin-bottom: 0;
+  padding-right: 0.2rem;
 }
 
 .old-price s {
@@ -605,6 +718,7 @@
   font-weight: bold;
   color: var(--color-primary);
   line-height: 1.1;
+  margin-bottom: 0;
 }
 
 .product-meta .stock {

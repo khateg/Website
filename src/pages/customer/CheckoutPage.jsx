@@ -84,26 +84,6 @@ function CheckoutPage() {
     }
 
     try {
-      // Verify stock availability before creating order
-      for (const cartItem of cartItems) {
-        const productRef = ref(db, `products/${cartItem.id}`);
-        const snapshot = await get(productRef);
-        if (!snapshot.exists()) {
-          setError(`Product ${cartItem.name} no longer exists`);
-          setLoading(false);
-          return;
-        }
-        const currentStock = snapshot.val().stock || 0;
-        if (currentStock < cartItem.quantity) {
-          setError(
-            `Only ${currentStock} of ${cartItem.name} available. Please update your cart.`,
-          );
-          setLoading(false);
-          return;
-        }
-      }
-
-      // Create order
       const orderData = {
         userId: user.uid,
         customerInfo: formData,
@@ -120,15 +100,6 @@ function CheckoutPage() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-
-      // Update stock for each product
-      for (const cartItem of cartItems) {
-        const productRef = ref(db, `products/${cartItem.id}`);
-        const snapshot = await get(productRef);
-        const currentStock = snapshot.val().stock || 0;
-        const newStock = currentStock - cartItem.quantity;
-        await update(productRef, { stock: newStock });
-      }
 
       // Save order to Realtime Database
       const ordersRef = ref(db, "orders");
