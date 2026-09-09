@@ -49,16 +49,6 @@ function CustomerLayout({ children }) {
     <div className="customer-layout">
       <nav className="navbar">
         <div className="nav-container">
-          <button
-            type="button"
-            className="mobile-search-toggle"
-            onClick={() => setIsMobileSearchOpen((isOpen) => !isOpen)}
-            aria-label="Search products"
-            title="Search products"
-          >
-            <BiSearch size={22} />
-          </button>
-
           <Link to="/" className="logo">
             <img src={logo} alt="Khat Logo" className="logo-img" />
           </Link>
