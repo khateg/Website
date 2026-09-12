@@ -12,6 +12,29 @@ const escapeHtml = (value) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
+const formatOptionSummary = (selectedOptions = {}) => {
+  if (!selectedOptions || typeof selectedOptions !== "object") {
+    return "";
+  }
+
+  const rawOptions = selectedOptions || {};
+  const hasNotebookKeys = Boolean(
+    rawOptions.size || rawOptions.coverType || rawOptions.pageType,
+  );
+
+  const optionKeys = hasNotebookKeys
+    ? ["size", "coverType", "pageType"]
+    : Object.keys(rawOptions);
+
+  const summary = optionKeys
+    .map((key) => rawOptions[key])
+    .filter(Boolean)
+    .map((value) => String(value).trim().toLowerCase())
+    .join(" • ");
+
+  return summary;
+};
+
 const formatItems = (items = []) =>
   items
     .map(
@@ -21,6 +44,7 @@ const formatItems = (items = []) =>
     <td>${escapeHtml(item.quantity)}</td>
     <td>${escapeHtml(item.price)} LE</td>
     <td>${escapeHtml(item.total)} LE</td>
+    <td>${escapeHtml(formatOptionSummary(item.selectedOptions))}</td>
   </tr>
 `,
     )
@@ -41,7 +65,7 @@ const createEmailHtml = (order, recipientType) => {
     <p><strong>Order ID:</strong> ${escapeHtml(order.orderId)}</p>
     <p><strong>Status:</strong> ${escapeHtml(order.status || "pending")}</p>
     <table cellpadding="8" cellspacing="0" border="1" style="border-collapse:collapse">
-      <thead><tr><th>Item</th><th>Quantity</th><th>Price</th><th>Total</th></tr></thead>
+      <thead><tr><th>Item</th><th>Quantity</th><th>Price</th><th>Total</th><th>Options</th></tr></thead>
       <tbody>${formatItems(order.items)}</tbody>
     </table>
     <p><strong>Order total:</strong> ${escapeHtml(order.totalAmount)} LE</p>

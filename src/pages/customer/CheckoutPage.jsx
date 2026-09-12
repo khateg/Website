@@ -93,6 +93,7 @@ function CheckoutPage() {
           price: item.price,
           quantity: item.quantity,
           total: item.price * item.quantity,
+          selectedOptions: item.selectedOptions || {},
         })),
         totalAmount: getTotalPrice(),
         status: "pending",

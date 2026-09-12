@@ -349,6 +349,7 @@
   }
 
   .nav-links .dashboard-nav-item {
+    order: -1;
     margin-right: auto;
   }
 
