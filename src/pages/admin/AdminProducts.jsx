@@ -321,7 +321,7 @@ function AdminProducts() {
             {formData.category && (
               <>
                 <div className="form-group full-width">
-                  <label>Option Prices & Old Prices</label>
+                  <label>Option Prices</label>
                   {renderOptionPriceRows(
                     formData.category,
                     formData.options,
@@ -402,8 +402,6 @@ function AdminProducts() {
               <th>Name</th>
               <th>Category</th>
               <th>Style</th>
-              <th>Price (LE)</th>
-              <th>Stock</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -413,8 +411,6 @@ function AdminProducts() {
                 <td>{product.name}</td>
                 <td>{product.category}</td>
                 <td>{product.style || "Not assigned"}</td>
-                <td>{product.price}</td>
-                <td>{product.stock}</td>
                 <td>
                   <button
                     onClick={() => handleEdit(product)}
