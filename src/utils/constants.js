@@ -16,6 +16,9 @@ export const ORDER_STATUS = {
   cancelled: "cancelled",
 };
 
+// Shipping Fees
+export const SHIPPING_FEE = 60.0;
+
 // Product Categories
 export const CATEGORIES = ["Custom", "Notebooks", "Wall Arts", "Stickers"];
 

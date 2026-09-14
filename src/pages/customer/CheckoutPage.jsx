@@ -4,6 +4,7 @@ import { auth, db } from "../../services/firebase";
 import { ref, get, set, push, update } from "firebase/database";
 import { useCart } from "../../context/CartContext";
 import { useProducts } from "../../context/ProductContext";
+import { SHIPPING_FEE } from "../../utils/constants";
 import "../styles/pages.css";
 
 function CheckoutPage() {
@@ -238,10 +239,10 @@ function CheckoutPage() {
             </div>
             <div className="order-item">
               <span>Shipping:</span>
-              <span>0.00 LE</span>
+              <span>{SHIPPING_FEE.toFixed(2)} LE</span>
             </div>
             <div className="order-total">
-              <strong>Total: {getTotalPrice().toFixed(2)} LE</strong>
+              <strong>Total: {(getTotalPrice() + SHIPPING_FEE).toFixed(2)} LE</strong>
             </div>
             <p className="payment-method">Payment Method: Cash on Delivery</p>
           </div>

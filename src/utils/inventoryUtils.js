@@ -2,33 +2,33 @@ export const PRODUCT_OPTION_CATALOG = {
   Notebooks: {
     options: {
       size: {
-        A6: { price: 80 },
-        A5: { price: 120 },
-        A4: { price: 160 },
+        A6: { price: 140 },
+        A5: { price: 170 },
+        A4: { price: 220 },
       },
       coverType: {
         soft: { price: 0 },
-        hard: { price: 40 },
+        hard: { price: 35 },
       },
       pageType: {
         blank: { price: 0 },
-        lined: { price: 20 },
+        lined: { price: 15 },
       },
     },
     defaults: {
       size: "A5",
-      coverType: "soft",
-      pageType: "blank",
+      coverType: "Soft",
+      pageType: "Blank",
     },
   },
   "Wall Arts": {
     options: {
       size: {
-        "20x30": { price: 180 },
-        "40x50": { price: 260 },
+        "20x30": { price: 190 },
+        "40x50": { price: 340 },
         "30x40": { price: 240 },
-        "50x60": { price: 380 },
-        "50x70": { price: 460 },
+        "50x60": { price: 440 },
+        "50x70": { price: 490 },
       },
     },
     defaults: {

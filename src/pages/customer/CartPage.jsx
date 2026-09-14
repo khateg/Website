@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { SHIPPING_FEE } from "../../utils/constants";
 import "../styles/pages.css";
 
 function CartPage() {
@@ -140,11 +141,11 @@ function CartPage() {
               </div>
               <div className="summary-row">
                 <span>Shipping:</span>
-                <span>0.00 LE</span>
+                <span>{SHIPPING_FEE.toFixed(2)} LE</span>
               </div>
               <div className="summary-row total">
                 <span>Total:</span>
-                <span>{getTotalPrice().toFixed(2)} LE</span>
+                <span>{(getTotalPrice() + SHIPPING_FEE).toFixed(2)} LE</span>
               </div>
               <Link to="/checkout" className="btn-primary full-width">
                 Proceed to Checkout
