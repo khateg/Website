@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../../services/firebase";
 import { signOut } from "firebase/auth";
@@ -19,9 +19,16 @@ function CustomerLayout({ children }) {
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const searchInputRef = useRef(null);
   const { cartItems, clearCart } = useCart();
   const { wishlistItems } = useWishlist();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isMobileSearchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [isMobileSearchOpen]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -49,11 +56,30 @@ function CustomerLayout({ children }) {
     <div className="customer-layout">
       <nav className="navbar">
         <div className="nav-container">
+          <div className="mobile-nav-left">
+            <button
+              type="button"
+              className="mobile-search-toggle"
+              aria-label={isMobileSearchOpen ? "Close search" : "Open search"}
+              aria-expanded={isMobileSearchOpen}
+              aria-controls="customer-search"
+              onClick={() => setIsMobileSearchOpen((isOpen) => !isOpen)}
+            >
+              <BiSearch size={22} aria-hidden="true" />
+            </button>
+            {user && (
+              <Link to="/dashboard" className="mobile-dashboard-link">
+                Dashboard
+              </Link>
+            )}
+          </div>
+
           <Link to="/" className="logo">
             <img src={logo} alt="Khat Logo" className="logo-img" />
           </Link>
 
           <form
+            id="customer-search"
             className={`search-form ${isMobileSearchOpen ? "is-open" : ""}`}
             onSubmit={handleSearch}
           >
@@ -63,6 +89,7 @@ function CustomerLayout({ children }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
+              ref={searchInputRef}
             />
             <button type="submit" className="search-btn">
               <BiSearch size={20} />

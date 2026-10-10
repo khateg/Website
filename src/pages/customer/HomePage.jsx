@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useProducts } from "../../context/ProductContext";
 import { useCart } from "../../context/CartContext";
+import { FiChevronDown, FiSliders } from "react-icons/fi";
 import {
   getProductOptionPrice,
   getProductOptionValueDisplay,
@@ -92,6 +93,9 @@ function HomePage() {
   const searchQuery = searchParams.get("search") || "";
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedStyle, setSelectedStyle] = useState(null);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const activeFilterCount =
+    Number(Boolean(selectedCategory)) + Number(Boolean(selectedStyle));
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
@@ -134,51 +138,79 @@ function HomePage() {
             )}
           </div>
 
-          <div className="category-filter-group">
-            <h3 className="filter-label">Categories</h3>
-            <div className="category-filters">
-              <button
-                className={`category-btn ${!selectedCategory ? "active" : ""}`}
-                onClick={() => {
-                  setSelectedCategory(null);
-                  window.history.replaceState({}, "", "/");
-                }}
-              >
-                All Products
-              </button>
-              {CATEGORIES.map((category) => (
-                <button
-                  key={category}
-                  className={`category-btn ${selectedCategory === category ? "active" : ""}`}
-                  onClick={() => {
-                    setSelectedCategory(category);
-                    window.history.replaceState({}, "", "/");
-                  }}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
+          <div className="product-filters">
+            <button
+              type="button"
+              className="product-filter-toggle"
+              aria-expanded={isMobileFiltersOpen}
+              aria-controls="product-filter-options"
+              onClick={() => setIsMobileFiltersOpen((isOpen) => !isOpen)}
+            >
+              <span className="product-filter-toggle-label">
+                <FiSliders aria-hidden="true" />
+                Filter products
+                {activeFilterCount > 0 && (
+                  <span className="product-filter-count">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </span>
+              <FiChevronDown
+                className={isMobileFiltersOpen ? "is-open" : ""}
+                aria-hidden="true"
+              />
+            </button>
+            <div
+              id="product-filter-options"
+              className={`product-filters-panel ${isMobileFiltersOpen ? "is-open" : ""}`}
+            >
+              <div className="category-filter-group">
+                <h3 className="filter-label">Categories</h3>
+                <div className="category-filters">
+                  <button
+                    className={`category-btn ${!selectedCategory ? "active" : ""}`}
+                    onClick={() => {
+                      setSelectedCategory(null);
+                      window.history.replaceState({}, "", "/");
+                    }}
+                  >
+                    All Products
+                  </button>
+                  {CATEGORIES.map((category) => (
+                    <button
+                      key={category}
+                      className={`category-btn ${selectedCategory === category ? "active" : ""}`}
+                      onClick={() => {
+                        setSelectedCategory(category);
+                        window.history.replaceState({}, "", "/");
+                      }}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          <div className="style-filter-group">
-            <h3 className="filter-label">Styles</h3>
-            <div className="category-filters style-filters">
-              <button
-                className={`category-btn ${!selectedStyle ? "active" : ""}`}
-                onClick={() => setSelectedStyle(null)}
-              >
-                All Styles
-              </button>
-              {STYLES.map((style) => (
-                <button
-                  key={style}
-                  className={`category-btn ${selectedStyle === style ? "active" : ""}`}
-                  onClick={() => setSelectedStyle(style)}
-                >
-                  {style}
-                </button>
-              ))}
+              <div className="style-filter-group">
+                <h3 className="filter-label">Styles</h3>
+                <div className="category-filters style-filters">
+                  <button
+                    className={`category-btn ${!selectedStyle ? "active" : ""}`}
+                    onClick={() => setSelectedStyle(null)}
+                  >
+                    All Styles
+                  </button>
+                  {STYLES.map((style) => (
+                    <button
+                      key={style}
+                      className={`category-btn ${selectedStyle === style ? "active" : ""}`}
+                      onClick={() => setSelectedStyle(style)}
+                    >
+                      {style}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
