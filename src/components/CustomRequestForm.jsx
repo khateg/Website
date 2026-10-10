@@ -3,6 +3,8 @@ import { auth, db } from '../services/firebase'
 import { ref, get } from 'firebase/database'
 import { customRequestService } from '../services/customRequestService'
 import { cloudinaryService } from '../services/cloudinaryService'
+import { TbBrandOpenai } from 'react-icons/tb'
+import { SiClaude, SiGooglegemini } from 'react-icons/si'
 import './styles/customForm.css'
 
 function CustomRequestForm() {
@@ -198,6 +200,48 @@ function CustomRequestForm() {
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+
+          <div className="ai-design-links">
+            <p>Need help creating a design? Try one of these AI tools, then upload your design above.</p>
+            <div className="ai-design-link-list">
+              <a
+                href="https://chatgpt.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ai-design-link chatgpt"
+              >
+                <TbBrandOpenai aria-hidden="true" />
+                <span>ChatGPT</span>
+              </a>
+              <a
+                href="https://gemini.google.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ai-design-link gemini"
+              >
+                <SiGooglegemini aria-hidden="true" />
+                <span>Gemini</span>
+              </a>
+              <a
+                href="https://claude.ai/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ai-design-link claude"
+              >
+                <SiClaude aria-hidden="true" />
+                <span>Claude</span>
+              </a>
+              <a
+                href="https://www.canva.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ai-design-link canva"
+              >
+                <span className="canva-icon" aria-hidden="true">C</span>
+                <span>Canva</span>
+              </a>
             </div>
           </div>
 
