@@ -5,7 +5,6 @@ import { productService } from "../../services/productService";
 import AdminProducts from "./AdminProducts";
 import AdminOrders from "./AdminOrders";
 import AdminCustomers from "./AdminCustomers";
-import AdminInventory from "./AdminInventory";
 import AdminFinancials from "./AdminFinancials";
 import "../styles/pages.css";
 
@@ -51,13 +50,11 @@ function AdminDashboard() {
   const isProductsPage = location.pathname.includes("/products");
   const isOrdersPage = location.pathname.includes("/orders");
   const isCustomersPage = location.pathname.includes("/customers");
-  const isInventoryPage = location.pathname.includes("/inventory");
   const isFinancialsPage = location.pathname.includes("/financials");
   const isDashboard =
     !isProductsPage &&
     !isOrdersPage &&
     !isCustomersPage &&
-    !isInventoryPage &&
     !isFinancialsPage;
 
   if (loading && isDashboard)
@@ -66,7 +63,6 @@ function AdminDashboard() {
   if (isProductsPage) return <AdminProducts />;
   if (isOrdersPage) return <AdminOrders />;
   if (isCustomersPage) return <AdminCustomers />;
-  if (isInventoryPage) return <AdminInventory />;
   if (isFinancialsPage) return <AdminFinancials />;
 
   return (

@@ -368,6 +368,7 @@
   .nav-container > .logo {
     position: absolute;
     left: 50%;
+    top: 0.75rem;
     transform: translateX(-50%);
     grid-row: 1;
     width: auto;
@@ -417,6 +418,14 @@
 
   .nav-links .logout-btn {
     padding: 0.4rem 0.65rem;
+  }
+
+  .nav-links .wishlist-nav-link {
+    padding-right: 0;
+  }
+
+  .nav-links .logout-nav-item .logout-btn {
+    padding-left: 0.2rem;
   }
 
   .cart-link-feather {

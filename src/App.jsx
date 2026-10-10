@@ -108,7 +108,6 @@ function App() {
                         <Route path="/products" element={<AdminDashboard />} />
                         <Route path="/orders" element={<AdminDashboard />} />
                         <Route path="/customers" element={<AdminDashboard />} />
-                        <Route path="/inventory" element={<AdminDashboard />} />
                         <Route
                           path="/financials"
                           element={<AdminFinancials />}

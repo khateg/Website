@@ -33,31 +33,51 @@ function AdminLayout({ children }) {
         </div>
 
         <nav className="sidebar-nav">
-          <Link to="/admin" className="nav-item">
+          <Link
+            to="/admin"
+            className="nav-item"
+            onClick={() => isMobile && setSidebarOpen(false)}
+          >
             <span className="nav-icon">📊</span>
             <span className="nav-text">Dashboard</span>
           </Link>
-          <Link to="/admin/products" className="nav-item">
+          <Link
+            to="/admin/products"
+            className="nav-item"
+            onClick={() => isMobile && setSidebarOpen(false)}
+          >
             <span className="nav-icon">📦</span>
             <span className="nav-text">Products</span>
           </Link>
-          <Link to="/admin/orders" className="nav-item">
+          <Link
+            to="/admin/orders"
+            className="nav-item"
+            onClick={() => isMobile && setSidebarOpen(false)}
+          >
             <span className="nav-icon">📋</span>
             <span className="nav-text">Orders</span>
           </Link>
-          <Link to="/admin/customers" className="nav-item">
+          <Link
+            to="/admin/customers"
+            className="nav-item"
+            onClick={() => isMobile && setSidebarOpen(false)}
+          >
             <span className="nav-icon">👥</span>
             <span className="nav-text">Customers</span>
           </Link>
-          <Link to="/admin/inventory" className="nav-item">
-            <span className="nav-icon">📈</span>
-            <span className="nav-text">Inventory</span>
-          </Link>
-          <Link to="/admin/financials" className="nav-item">
+          <Link
+            to="/admin/financials"
+            className="nav-item"
+            onClick={() => isMobile && setSidebarOpen(false)}
+          >
             <span className="nav-icon">💰</span>
             <span className="nav-text">Financials</span>
           </Link>
-          <Link to="/admin/custom-requests" className="nav-item">
+          <Link
+            to="/admin/custom-requests"
+            className="nav-item"
+            onClick={() => isMobile && setSidebarOpen(false)}
+          >
             <span className="nav-icon">✨</span>
             <span className="nav-text">Custom Requests</span>
           </Link>
